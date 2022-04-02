@@ -92,14 +92,11 @@ public class TabsItemsPresenter : ItemsPresenter
 
         ItemsOrganiser.Organise(maxConstraint, dragablzItems);
         var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems);
-
-        //Width = measure.Width;
-        //Height = measure.Height;
-
+        
         var width = !double.IsInfinity(measure.Width) ? measure.Width : availableSize.Width;
         var height = !double.IsInfinity(measure.Height) ? measure.Height : availableSize.Height;
 
-        return new Size(width, 0);
+        return new Size(width, height);
     }
 
     #region Internal Methods

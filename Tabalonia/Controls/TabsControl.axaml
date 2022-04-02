@@ -27,7 +27,6 @@
 
     <Style Selector="controls|TabsControl">
         <Setter Property="Margin" Value="0" />
-        <Setter Property="Padding" Value="0 30 0 0" />
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:TabsControl">
@@ -37,20 +36,26 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                    <DockPanel>
-                        <controls:TabsItemsPresenter Name="PART_ItemsPresenter"
-                                                  Items="{TemplateBinding Items}"
-                                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                                  DockPanel.Dock="{TemplateBinding TabStripPlacement}" />
-                        <ContentPresenter Name="PART_SelectedContentHost"
-                                          Margin="{TemplateBinding Padding}"
+                    <Grid RowDefinitions="Auto *">
+                        <Grid ColumnDefinitions="Auto Auto *">
+
+                            <controls:TabsItemsPresenter Name="PART_ItemsPresenter"
+                                                         Items="{TemplateBinding Items}"
+                                                         ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                         ItemTemplate="{TemplateBinding ItemTemplate}"/>
+                            
+                            <Button Classes="AddItemCommandButtonStyle"
+                                    Grid.Column="1"/>
+                        </Grid>
+                        
+                        <ContentPresenter Grid.Row="1" 
+                                          Name="PART_SelectedContentHost"
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                           Content="{TemplateBinding SelectedContent}"
                                           ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
 
-                    </DockPanel>
+                    </Grid>
                 </Border>
             </ControlTemplate>
         </Setter>

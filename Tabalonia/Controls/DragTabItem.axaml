@@ -45,7 +45,7 @@
 		<Setter Property="Margin" Value="0" />
 	    <Setter Property="MinHeight" Value="32" />
 		<Setter Property="Height" Value="32" />
-		<Setter Property="Width" Value="160" />
+		<Setter Property="Width" Value="130" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="CornerRadius" Value="4 4 0 0" />
 		<Setter Property="Template">
@@ -72,11 +72,12 @@
 
 					<Border Grid.Column="1"
                             Name="PART_LayoutRoot"
+							Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{TemplateBinding Padding}">
-						<Grid>
+						<Grid ColumnDefinitions="* Auto">
 
 							<ContentPresenter Name="PART_ContentPresenter"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
@@ -87,8 +88,13 @@
                                               TextBlock.FontSize="{TemplateBinding FontSize}"
                                               TextBlock.FontWeight="{TemplateBinding FontWeight}" />
 
-							<Thumb Name="PART_Thumb"
-                                   Classes="DragTabItemThumbStyle"/>
+							<Thumb  Grid.Column="0"
+                                    Name="PART_Thumb"
+                                    Classes="DragTabItemThumbStyle"/>
+
+                            <Button Grid.Column="1"
+                                    BorderBrush="{TemplateBinding Background}"
+                                    Classes="CloseItemButtonStyle"/>
 						</Grid>
 					</Border>
 
@@ -128,15 +134,7 @@
     <Style Selector="Window[IsActive=false] local|DragTabItem">
         <Setter Property="Background" Value="{DynamicResource TabItemBackgroundBrushWindowInactive}" />
     </Style>
-
-
-	<!-- Nornal state -->
-	<Style Selector="local|DragTabItem /template/ Border#PART_LayoutRoot">
-		<Setter Property="Background" Value="{Binding $parent[TabItem].Background}" />
-	</Style>
-
-    
-
+   
     <!-- Selected state -->
     <Style Selector="local|DragTabItem:selected">
 		<Setter Property="Background" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
@@ -148,51 +146,27 @@
     </Style>
 
     <!-- PointerOver state -->
-	<Style Selector="local|DragTabItem:pointerover /template/ Border#PART_LayoutRoot">
+	<Style Selector="local|DragTabItem:pointerover">
 		<Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
 		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
 	</Style>
-    <Style Selector="local|DragTabItem:pointerover /template/ Path#PART_RightCorner">
-        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
-    </Style>
-    <Style Selector="local|DragTabItem:pointerover /template/ Path#PART_LeftCorner">
-        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
-    </Style>
     <Style Selector="local|DragTabItem:pointerover /template/ Border#PART_RightBorder">
         <Setter Property="IsVisible" Value="False" />
     </Style>
 
-    <Style Selector="Window[IsActive=false] local|DragTabItem:pointerover /template/ Border#PART_LayoutRoot">
+    <Style Selector="Window[IsActive=false] local|DragTabItem:pointerover">
         <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOverWindowInactive}" />
     </Style>
 
 	<!-- Selected PointerOver state -->
-	<Style Selector="local|DragTabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+	<Style Selector="local|DragTabItem:selected:pointerover">
 		<Setter Property="Background" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
 		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
 	</Style>
-    <Style Selector="local|DragTabItem:selected:pointerover /template/ Path#PART_RightCorner">
-        <Setter Property="Fill" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
-    </Style>
-    <Style Selector="local|DragTabItem:selected:pointerover /template/ Path#PART_LeftCorner">
-        <Setter Property="Fill" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
-    </Style>
     <Style Selector="local|DragTabItem:selected:pointerover /template/ Border#PART_RightBorder">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-
-	<!-- Disabled state -->
-	<Style Selector="local|DragTabItem:disabled /template/ Border#PART_LayoutRoot">
-		<Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
-		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
-	</Style>
-    <Style Selector="local|DragTabItem:disabled /template/ Path#PART_RightCorner">
-        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
-    </Style>
-    <Style Selector="local|DragTabItem:disabled /template/ Path#PART_LeftCorner">
-        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
-    </Style>
-
+	
 	<Style Selector="local|DragTabItem[TabStripPlacement=Left] /template/ ContentPresenter#PART_ContentPresenter">
 		<Setter Property="Margin" Value="8,0,0,0" />
 	</Style>
@@ -204,7 +178,5 @@
 	<Style Selector="local|DragTabItem[TabStripPlacement=Right]">
 		<Setter Property="HorizontalContentAlignment" Value="Right" />
 	</Style>
-
-    
 
 </Styles>

@@ -163,11 +163,9 @@ public abstract class StackOrganiser : IItemsOrganiser
         foreach (var dragTabItem in items)
         {
             dragTabItem.Measure(size);
-
-            //var loaded = dragTabItem.IsLoaded
-            var loaded = true;
-
-
+            
+            var loaded = dragTabItem.IsArrangeValid;
+            
             if (_orientation == Orientation.Horizontal)
             {
                 height = Math.Max(height,
@@ -214,7 +212,8 @@ public abstract class StackOrganiser : IItemsOrganiser
             newItem.LogicalIndex = logicalIndex++;
             newItem.Measure(measureBounds);
             var desiredSize = _getDesiredSize(newItem);
-            if (desiredSize == 0.0) desiredSize = 1.0; //no measure? create something to help sorting
+            if (desiredSize == 0.0) 
+                desiredSize = 1.0; //no measure? create something to help sorting
             currentCoord += desiredSize + _itemOffset;
         }
     }
