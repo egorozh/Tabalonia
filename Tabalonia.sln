@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalonia", "Tabalonia\Tabalonia.csproj", "{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalonia.Demo", "Tabalonia.Demo\Tabalonia.Demo.csproj", "{CAA8B35C-E8F0-4776-B45F-96C90DEF0F47}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAA8B35C-E8F0-4776-B45F-96C90DEF0F47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAA8B35C-E8F0-4776-B45F-96C90DEF0F47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAA8B35C-E8F0-4776-B45F-96C90DEF0F47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAA8B35C-E8F0-4776-B45F-96C90DEF0F47}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7DB7A87D-D5C7-4581-AD49-7F3420E31048}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,197 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Tabalonia.Controls">
+
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<StackPanel Spacing="20">
+				<TabItem Header="Leaf" />
+				<TabItem Header="Arch" IsSelected="True" />
+			</StackPanel>
+		</Border>
+	</Design.PreviewWith>
+
+	<Styles.Resources>
+		<x:Double x:Key="TabItemMinHeight">48</x:Double>
+		<x:Double x:Key="TabItemVerticalPipeHeight">24</x:Double>
+		<x:Double x:Key="TabItemPipeThickness">2</x:Double>
+	</Styles.Resources>
+
+    <Style Selector="Thumb.DragTabItemThumbStyle">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="IsHitTestVisible" Value="True" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+	<Style Selector="local|DragTabItem">
+        <Setter Property="Canvas.Left" Value="{Binding $self.X}" />
+        <Setter Property="Canvas.Top" Value="{Binding $self.Y}" />
+		<Setter Property="FontSize" Value="12" />
+		<Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+		<Setter Property="Background" Value="{DynamicResource TabItemBackgroundBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+		<Setter Property="Padding" Value="{DynamicResource TabItemHeaderMargin}" />
+		<Setter Property="Margin" Value="0" />
+	    <Setter Property="MinHeight" Value="32" />
+		<Setter Property="Height" Value="32" />
+		<Setter Property="Width" Value="160" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="CornerRadius" Value="4 4 0 0" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid ColumnDefinitions="Auto * Auto">
+
+					<Path Fill="{TemplateBinding Background}"
+                          Stretch="Uniform"
+                          Height="4"
+                          VerticalAlignment="Bottom"
+                          Name="PART_LeftCorner">
+						<Path.Data>
+							<PathGeometry>
+								<PathFigure StartPoint="0 0"
+                                            IsClosed="True">
+									<ArcSegment Size="4 4"
+                                                Point="4 -4"
+                                                SweepDirection="CounterClockwise" />
+									<LineSegment Point="4 0" />
+								</PathFigure>
+							</PathGeometry>
+						</Path.Data>
+					</Path>
+
+					<Border Grid.Column="1"
+                            Name="PART_LayoutRoot"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+						<Grid>
+
+							<ContentPresenter Name="PART_ContentPresenter"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              Content="{TemplateBinding Header}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                                              TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+
+							<Thumb Name="PART_Thumb"
+                                   Classes="DragTabItemThumbStyle"/>
+						</Grid>
+					</Border>
+
+                    <Border Grid.Column="2"
+                            Name="PART_RightBorder"
+                            Background="#777777"
+                            Height="20"
+                            Width="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left" />
+
+					<Path Grid.Column="2"
+                          Stretch="Uniform"
+                          Height="4"
+                          Fill="{TemplateBinding Background}"
+                          VerticalAlignment="Bottom"
+                          Name="PART_RightCorner">
+						<Path.Data>
+							<PathGeometry>
+								<PathFigure StartPoint="0 -4"
+                                            IsClosed="True">
+									<ArcSegment Size="4 4"
+                                                Point="4 0"
+                                                SweepDirection="CounterClockwise" />
+									<LineSegment Point="0 0" />
+								</PathFigure>
+							</PathGeometry>
+						</Path.Data>
+					</Path>
+
+				</Grid>
+
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<!-- Nornal state -->
+	<Style Selector="local|DragTabItem /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="{Binding $parent[TabItem].Background}" />
+	</Style>
+
+    <!-- Selected state -->
+    <Style Selector="local|DragTabItem:selected">
+		<Setter Property="Background" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+	</Style>
+
+    <Style Selector="local|DragTabItem:selected /template/ Border#PART_RightBorder">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- PointerOver state -->
+	<Style Selector="local|DragTabItem:pointerover /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+	</Style>
+    <Style Selector="local|DragTabItem:pointerover /template/ Path#PART_RightCorner">
+        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+    </Style>
+    <Style Selector="local|DragTabItem:pointerover /template/ Path#PART_LeftCorner">
+        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+    </Style>
+    <Style Selector="local|DragTabItem:pointerover /template/ Border#PART_RightBorder">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+	<!-- Selected PointerOver state -->
+	<Style Selector="local|DragTabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+	</Style>
+    <Style Selector="local|DragTabItem:selected:pointerover /template/ Path#PART_RightCorner">
+        <Setter Property="Fill" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
+    </Style>
+    <Style Selector="local|DragTabItem:selected:pointerover /template/ Path#PART_LeftCorner">
+        <Setter Property="Fill" Value="{DynamicResource SelectedTabItemBackgroundBrush}" />
+    </Style>
+    <Style Selector="local|DragTabItem:selected:pointerover /template/ Border#PART_RightBorder">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+	<!-- Disabled state -->
+	<Style Selector="local|DragTabItem:disabled /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
+	</Style>
+    <Style Selector="local|DragTabItem:disabled /template/ Path#PART_RightCorner">
+        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
+    </Style>
+    <Style Selector="local|DragTabItem:disabled /template/ Path#PART_LeftCorner">
+        <Setter Property="Fill" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
+    </Style>
+
+	<Style Selector="local|DragTabItem[TabStripPlacement=Left] /template/ ContentPresenter#PART_ContentPresenter">
+		<Setter Property="Margin" Value="8,0,0,0" />
+	</Style>
+
+	<Style Selector="local|DragTabItem[TabStripPlacement=Right] /template/ ContentPresenter#PART_ContentPresenter">
+		<Setter Property="Margin" Value="0,0,8,0" />
+	</Style>
+
+	<Style Selector="local|DragTabItem[TabStripPlacement=Right]">
+		<Setter Property="HorizontalContentAlignment" Value="Right" />
+	</Style>
+
+</Styles>
