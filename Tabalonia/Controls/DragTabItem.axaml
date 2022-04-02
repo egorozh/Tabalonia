@@ -94,7 +94,7 @@
 
                     <Border Grid.Column="2"
                             Name="PART_RightBorder"
-                            Background="#777777"
+                            Background="{DynamicResource TabItemRightSeparatorBackgroundBrush}"
                             Height="20"
                             Width="1"
                             VerticalAlignment="Center"
@@ -125,10 +125,17 @@
 		</Setter>
 	</Style>
 
+    <Style Selector="Window[IsActive=false] local|DragTabItem">
+        <Setter Property="Background" Value="{DynamicResource TabItemBackgroundBrushWindowInactive}" />
+    </Style>
+
+
 	<!-- Nornal state -->
 	<Style Selector="local|DragTabItem /template/ Border#PART_LayoutRoot">
 		<Setter Property="Background" Value="{Binding $parent[TabItem].Background}" />
 	</Style>
+
+    
 
     <!-- Selected state -->
     <Style Selector="local|DragTabItem:selected">
@@ -153,6 +160,10 @@
     </Style>
     <Style Selector="local|DragTabItem:pointerover /template/ Border#PART_RightBorder">
         <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Window[IsActive=false] local|DragTabItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOverWindowInactive}" />
     </Style>
 
 	<!-- Selected PointerOver state -->
@@ -193,5 +204,7 @@
 	<Style Selector="local|DragTabItem[TabStripPlacement=Right]">
 		<Setter Property="HorizontalContentAlignment" Value="Right" />
 	</Style>
+
+    
 
 </Styles>
