@@ -26,7 +26,6 @@
     </Styles.Resources>
 
     <Style Selector="controls|TabsControl">
-        <Setter Property="Margin" Value="0" />
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:TabsControl">

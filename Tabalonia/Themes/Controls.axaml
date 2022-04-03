@@ -4,6 +4,7 @@
     <StyleInclude Source="avares://Tabalonia/Controls/TabsControl.axaml" />
     <StyleInclude Source="avares://Tabalonia/Controls/DragTabItem.axaml" />
     <StyleInclude Source="avares://Tabalonia/Controls/Docking/Layout.axaml" />
+    <StyleInclude Source="avares://Tabalonia/Controls/Docking/DropZone.axaml" />
     <StyleInclude Source="avares://Tabalonia/Themes/Controls/Buttons.axaml" />
 
 </Styles>

@@ -12,8 +12,7 @@
         WindowStartupLocation="CenterScreen">
 
 	<docking:Layout >
-        <controls:TabsControl Margin="8"
-                              Name="TabsControl">
+        <controls:TabsControl Name="TabsControl">
 
             <TabItem Header="Tab No. 1" IsSelected="True">
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">

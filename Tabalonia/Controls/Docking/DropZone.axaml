@@ -1,0 +1,30 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:docking="clr-namespace:Tabalonia.Controls.Docking"
+        xmlns:docking1="clr-namespace:Tabalonia.Converters.Docking">
+
+    <Styles.Resources>
+		<docking1:DropZoneDataConverter x:Key="DropZoneDataConverter" />
+		<docking1:DropZoneShapeSizeConverter x:Key="DropZoneShapeSizeConverter" />
+    </Styles.Resources>
+
+    <Style Selector="docking|DropZone">
+        <Setter Property="Opacity" Value=".25" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Path Stretch="Fill"
+                          Width="{TemplateBinding Location, Converter={StaticResource DropZoneShapeSizeConverter}, ConverterParameter=width}"
+                          Height="{TemplateBinding Location, Converter={StaticResource DropZoneShapeSizeConverter}, ConverterParameter=height}"
+                          Fill="{TemplateBinding Foreground}"
+                          Data="{TemplateBinding Location, Converter={StaticResource DropZoneDataConverter}}"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="docking|DropZone[IsOffered=True]">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+
+</Styles>
