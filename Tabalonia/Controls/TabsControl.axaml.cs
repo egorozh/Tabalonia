@@ -3,11 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System.Collections;
 using System.Collections.Specialized;
-using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
@@ -25,11 +25,17 @@ public class TabsControl : TabControl
     public static readonly StyledProperty<bool> ShowDefaultAddButtonProperty =
         AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultAddButton));
 
+    public static readonly StyledProperty<bool> ShowDefaultCloseButtonProperty =
+        AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton));
+
     /// <summary>
     /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItemCommand"/>.
     /// </summary>
     public static readonly StyledProperty<Func<object>> NewItemFactoryProperty =
         AvaloniaProperty.Register<TabsControl, Func<object>>(nameof(NewItemFactory));
+
+    public static readonly StyledProperty<int> FixedHeaderCountProperty =
+        AvaloniaProperty.Register<TabsControl, int>(nameof(FixedHeaderCount));
 
     #endregion
 
@@ -42,12 +48,31 @@ public class TabsControl : TabControl
     }
 
     /// <summary>
+    /// Indicates whether a default close button should be displayed.  If manually templating the tab header content the close command 
+    /// can be called by executing the <see cref="TabablzControl.CloseItemCommand"/> command (typically via a <see cref="Button"/>).
+    /// </summary>
+    public bool ShowDefaultCloseButton
+    {
+        get => GetValue(ShowDefaultCloseButtonProperty);
+        set => SetValue(ShowDefaultCloseButtonProperty, value);
+    }
+
+    /// <summary>
     /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItemCommand"/>.
     /// </summary>
     public Func<object> NewItemFactory
     {
         get => GetValue(NewItemFactoryProperty);
         set => SetValue(NewItemFactoryProperty, value);
+    }
+
+    /// <summary>
+    /// Allows a the first adjacent tabs to be fixed (no dragging, and default close button will not show).
+    /// </summary>
+    public int FixedHeaderCount
+    {
+        get => GetValue(FixedHeaderCountProperty);
+        set => SetValue(FixedHeaderCountProperty, value);
     }
 
     #endregion
