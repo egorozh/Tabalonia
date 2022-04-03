@@ -46,6 +46,14 @@ public class DragTabItemContainerGenerator : ItemContainerGenerator<DragTabItem>
             }
         }
 
+        if (tabItem.ContextMenu == null)
+        {
+            if (item is Control control)
+            {
+                tabItem.ContextMenu = control.ContextMenu;
+            }
+        }
+
         if (tabItem.Content is not IControl)
         {
             tabItem.Bind(ContentControl.ContentTemplateProperty, new OwnerBinding<IDataTemplate>(

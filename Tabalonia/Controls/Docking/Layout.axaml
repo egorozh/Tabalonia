@@ -1,0 +1,20 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:docking="clr-namespace:Tabalonia.Controls.Docking">
+
+	<Style Selector="docking|Layout">
+        <Setter Property="Template">
+			<ControlTemplate>
+				<Border Background="{TemplateBinding Background}"
+						  BorderBrush="{TemplateBinding BorderBrush}"
+						  BorderThickness="{TemplateBinding BorderThickness}">
+					<Grid>
+						<ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Grid>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+</Styles>

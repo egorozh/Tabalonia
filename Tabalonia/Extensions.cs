@@ -1,6 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using Tabalonia.Exceptions;
 
 namespace Tabalonia;
@@ -39,5 +42,37 @@ internal static class Extensions
             return c;
 
         return null;
+    }
+
+    /// <summary>
+    /// Yields the visual ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<IVisual> VisualTreeAncestory(this IVisual dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetVisualParent();
+        }
+    }
+
+    /// <summary>
+    /// Yields the logical ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<ILogical> LogicalTreeAncestory(this ILogical dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetLogicalParent();
+        }
     }
 }

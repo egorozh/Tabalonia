@@ -1,13 +1,13 @@
-using System.Collections;
-using System.Collections.Specialized;
-using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
 using Avalonia.Threading;
+using System.Collections;
+using System.Collections.Specialized;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
@@ -19,7 +19,7 @@ public class TabsControl : TabControl
     internal TabsItemsPresenter ItemsPresenter = null!;
 
     #endregion
-    
+
     #region Avalonia Properties
 
     public static readonly StyledProperty<bool> ShowDefaultAddButtonProperty =
@@ -76,16 +76,19 @@ public class TabsControl : TabControl
         AddToSource(newItem);
         SelectedItem = newItem;
 
-        Dispatcher.UIThread.Post(ItemsPresenter.InvalidateMeasure, DispatcherPriority.Loaded); 
+        Dispatcher.UIThread.Post(ItemsPresenter.InvalidateMeasure, DispatcherPriority.Loaded);
     }
 
-    public bool CanCloseItem(object tabItem) => tabItem is DragTabItem;
-
-    public void CloseItem(DragTabItem tabItem)
+    public void CloseItem(object tabItemSource)
     {
-        if (tabItem == null) 
+        if (tabItemSource == null)
             throw new ApplicationException("Valid DragablzItem to close is required.");
-        
+
+        var tabItem = FindDragTabItem(tabItemSource);
+
+        if (tabItem == null)
+            return;
+
         var cancel = false;
 
         //if (ClosingItemCallback != null)
@@ -98,7 +101,7 @@ public class TabsControl : TabControl
         if (!cancel)
             RemoveItem(tabItem);
     }
-    
+
 
     /// <summary>
     /// Adds an item to the source collection.  If the InterTabController.InterTabClient is set that instance will be deferred to.
@@ -130,7 +133,7 @@ public class TabsControl : TabControl
     public void RemoveFromSource(object item)
     {
         if (item == null) throw new ArgumentNullException(nameof(item));
-        
+
         if (Items is IList itemsList)
             itemsList.Remove(item);
 
@@ -150,7 +153,7 @@ public class TabsControl : TabControl
     }
 
     #endregion
-    
+
     protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         base.ItemsCollectionChanged(sender, e);
@@ -167,7 +170,8 @@ public class TabsControl : TabControl
 
     internal object RemoveItem(DragTabItem container)
     {
-        var containterInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, container));
+        var containterInfo =
+            ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, container));
 
         if (containterInfo == null)
             return container;
@@ -189,7 +193,7 @@ public class TabsControl : TabControl
         //if (Items.Count != 0) return item;
 
         //var window = Window.GetWindow(this);
-        
+
         //if (window != null
         //    && InterTabController != null
         //    && InterTabController.InterTabClient.TabEmptiedHandler(this, window) == TabEmptiedResponse.CloseWindowOrLayoutBranch)
@@ -282,5 +286,25 @@ public class TabsControl : TabControl
 
     private void ItemDragCompleted(object? sender, DragablzDragCompletedEventArgs e)
     {
+    }
+
+    private static DragTabItem? FindDragTabItem(object originalSource)
+    {
+        if (originalSource is DragTabItem dragTabItem)
+            return dragTabItem;
+
+        if (originalSource is IVisual visual &&
+            visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
+        {
+            return item;
+        }
+
+        if (originalSource is ILogical logical &&
+            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
+        {
+            return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
+        }
+
+        return null;
     }
 }
