@@ -27,6 +27,7 @@
 
     <Style Selector="controls|TabsControl">
         <Setter Property="Margin" Value="0" />
+        <Setter Property="ShowDefaultAddButton" Value="True" />
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:TabsControl">
@@ -45,7 +46,9 @@
                                                          ItemTemplate="{TemplateBinding ItemTemplate}"/>
                             
                             <Button Classes="AddItemCommandButtonStyle"
-                                    Grid.Column="1"/>
+                                    Grid.Column="1"
+                                    Command="{Binding $parent[controls:TabsControl].AddItem}"
+                                    IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
                         </Grid>
                         
                         <ContentPresenter Grid.Row="1" 

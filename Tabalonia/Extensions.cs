@@ -26,4 +26,18 @@ internal static class Extensions
                 yield return c;
         }
     }
+
+    public static TContainer? FindContainer<TContainer>(this IItemContainerGenerator itemGen, object? item)
+        where TContainer : class
+    {
+        if (item == null)
+            return null;
+
+        var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
+
+        if (info is {ContainerControl: TContainer c})
+            return c;
+
+        return null;
+    }
 }

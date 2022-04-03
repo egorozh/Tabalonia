@@ -77,7 +77,49 @@ public class TabsItemsPresenter : ItemsPresenter
     }
 
     #endregion
-    
+
+    #region Public Methods
+
+    public void MoveItem(MoveItemRequest moveItemRequest)
+    {
+        var dragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(moveItemRequest.Item); 
+        var contextDragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(moveItemRequest.Context);
+       
+        if (dragablzItem == null) return;
+
+        var sortedItems = DragablzItems().OrderBy(di => di.LogicalIndex).ToList();
+        sortedItems.Remove(dragablzItem);
+
+        switch (moveItemRequest.AddLocationHint)
+        {
+            case AddLocationHint.First:
+                sortedItems.Insert(0, dragablzItem);
+                break;
+            case AddLocationHint.Last:
+                sortedItems.Add(dragablzItem);
+                break;
+            case AddLocationHint.Prior:
+            case AddLocationHint.After:
+                if (contextDragablzItem == null)
+                    return;
+
+                var contextIndex = sortedItems.IndexOf(contextDragablzItem);
+                sortedItems.Insert(moveItemRequest.AddLocationHint == AddLocationHint.Prior ? contextIndex : contextIndex + 1, dragablzItem);
+
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        //TODO might not be too great for perf on larger lists
+        var orderedEnumerable = sortedItems.OrderBy(di => sortedItems.IndexOf(di));
+
+        var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
+        ItemsOrganiser.Organise(maxConstraint, orderedEnumerable);
+    }
+
+    #endregion
+
     protected override Size MeasureOverride(Size availableSize)
     {
         //if (LockedMeasure.HasValue)
@@ -152,7 +194,7 @@ public class TabsItemsPresenter : ItemsPresenter
         ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem);
 
         currentItem.BringIntoView();
-
+        
         eventArgs.Handled = true;
     }
 
@@ -181,4 +223,6 @@ public class TabsItemsPresenter : ItemsPresenter
     }
 
     #endregion
+
+   
 }

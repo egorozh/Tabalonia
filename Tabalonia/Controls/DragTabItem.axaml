@@ -94,7 +94,9 @@
 
                             <Button Grid.Column="1"
                                     BorderBrush="{TemplateBinding Background}"
-                                    Classes="CloseItemButtonStyle"/>
+                                    Classes="CloseItemButtonStyle"
+                                    Command="{Binding $parent[local:TabsControl].CloseItem}"
+                                    CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 						</Grid>
 					</Border>
 

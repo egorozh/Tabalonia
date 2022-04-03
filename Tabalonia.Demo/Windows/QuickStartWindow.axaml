@@ -11,7 +11,8 @@
         WindowStartupLocation="CenterScreen">
 
 
-    <controls:TabsControl Margin="8">
+    <controls:TabsControl Margin="8"
+                          Name="TabsControl">
 
         <TabItem Header="Tab No. 1" IsSelected="True">
             <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
