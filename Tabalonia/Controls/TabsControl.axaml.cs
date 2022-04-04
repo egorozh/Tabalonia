@@ -277,8 +277,10 @@ public class TabsControl : TabControl
 
         //e.DragablzItem.IsDropTargetFound = false;
 
-        //var sourceOfDragItemsControl = ItemsControlFromItemContainer(e.DragablzItem) as DragablzItemsControl;
-        //if (sourceOfDragItemsControl == null || !Equals(sourceOfDragItemsControl, _dragablzItemsControl)) return;
+        var parentPresenter = ItemsPresenterFromItemContainer(draggedItem);
+
+        if (parentPresenter is not { } sourceOfDragItemsControl
+            || !Equals(sourceOfDragItemsControl, ItemsPresenter)) return;
 
         //var itemsControlOffset = Mouse.GetPosition(_dragablzItemsControl);
         //_tabHeaderDragStartInformation = new TabHeaderDragStartInformation(e.DragablzItem, itemsControlOffset.X,
@@ -332,4 +334,7 @@ public class TabsControl : TabControl
 
         return null;
     }
+
+    private static TabsItemsPresenter? ItemsPresenterFromItemContainer(DragTabItem tabItem)
+        => tabItem.VisualTreeAncestory().OfType<TabsItemsPresenter>().LastOrDefault();
 }

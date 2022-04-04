@@ -12,7 +12,9 @@
 		<PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.13" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
+		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
 	</ItemGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\Tabalonia\Tabalonia.csproj" />
 	</ItemGroup>
