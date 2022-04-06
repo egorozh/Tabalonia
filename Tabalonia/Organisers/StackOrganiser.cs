@@ -151,8 +151,10 @@ public abstract class StackOrganiser : IItemsOrganiser
         var itemLocation = _orientation == Orientation.Horizontal ? itemDesiredLocation.X : itemDesiredLocation.Y;
         var boundsValue = _orientation == Orientation.Horizontal ? measureBounds.Width : measureBounds.Height;
 
+        var addButtonSize = addButton == null ? 0 : _getDesiredSize(addButton);
+
         var x = Math.Min(Math.Max(lowerBound, itemLocation),
-            boundsValue - _getDesiredSize(dragTabItem) - (addButton == null ? 0 : _getDesiredSize(addButton)));
+            boundsValue - _getDesiredSize(dragTabItem) - addButtonSize);
 
         const int y = 0;
 
