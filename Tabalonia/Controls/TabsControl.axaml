@@ -28,7 +28,6 @@
 
     <Style Selector="controls|TabsControl">
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
-        <Setter Property="ShowDefaultAddButton" Value="True" />
         <Setter Property="AddButtonTemplate">
             <Template>
                 <Button Classes="AddItemCommandButtonStyle"
