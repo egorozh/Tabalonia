@@ -158,7 +158,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         const int y = 0;
 
-        return _orientation == Orientation.Horizontal ? new Point(x, y) : new Point(y, 0);
+        return _orientation == Orientation.Horizontal ? new Point(x, y) : new Point(y, x);
     }
 
     public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items,
