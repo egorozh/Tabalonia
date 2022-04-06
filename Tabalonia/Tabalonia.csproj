@@ -10,10 +10,4 @@
 		<PackageReference Include="Avalonia" Version="0.10.10" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Controls\Docking\DropZone.axaml.cs">
-	    <DependentUpon>DropZone.axaml</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
 </Project>

@@ -126,8 +126,7 @@ public class TabsControl : TabControl
         if (!cancel)
             RemoveItem(tabItem);
     }
-
-
+    
     /// <summary>
     /// Adds an item to the source collection.  If the InterTabController.InterTabClient is set that instance will be deferred to.
     /// Otherwise an attempt will be made to add to the <see cref="ItemsSource" /> property, and lastly <see cref="Items"/>.
@@ -271,9 +270,13 @@ public class TabsControl : TabControl
 
     #endregion
 
+    #region Private Methods
+
     private void ItemDragStarted(object? sender, DragablzDragStartedEventArgs e)
     {
         var draggedItem = e.DragablzItem;
+
+        if (!IsMyItem(draggedItem)) return;
 
         //e.DragablzItem.IsDropTargetFound = false;
 
@@ -286,7 +289,7 @@ public class TabsControl : TabControl
         //_tabHeaderDragStartInformation = new TabHeaderDragStartInformation(e.DragablzItem, itemsControlOffset.X,
         //    itemsControlOffset.Y, e.DragStartedEventArgs.HorizontalOffset, e.DragStartedEventArgs.VerticalOffset);
 
-        var siblingsItems = ItemsPresenter.DragablzItems().Except(new[] {draggedItem});
+        var siblingsItems = ItemsPresenter.DragablzItems().Except(new[] { draggedItem });
 
         foreach (var otherItem in siblingsItems)
             otherItem.IsSelected = false;
@@ -327,7 +330,7 @@ public class TabsControl : TabControl
         }
 
         if (originalSource is ILogical logical &&
-            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
+            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is { PlacementTarget: { } placementTarget })
         {
             return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
         }
@@ -337,4 +340,8 @@ public class TabsControl : TabControl
 
     private static TabsItemsPresenter? ItemsPresenterFromItemContainer(DragTabItem tabItem)
         => tabItem.VisualTreeAncestory().OfType<TabsItemsPresenter>().LastOrDefault();
+
+    private bool IsMyItem(DragTabItem item) => ItemsPresenter.DragablzItems().Contains(item);
+
+    #endregion
 }

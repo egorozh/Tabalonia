@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:Tabalonia.Controls">
+        xmlns:controls="clr-namespace:Tabalonia.Controls"
+        xmlns:converters="clr-namespace:Tabalonia.Converters">
 
     <Design.PreviewWith>
         <Border Width="400">
@@ -27,6 +28,7 @@
 
     <Style Selector="controls|TabsControl">
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
+        <Setter Property="ShowDefaultAddButton" Value="True" />
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:TabsControl">
                 <Border BorderBrush="{TemplateBinding BorderBrush}"
@@ -36,14 +38,16 @@
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
                     <Grid RowDefinitions="Auto *">
-                        <Grid ColumnDefinitions="Auto Auto *">
+                        <Grid ColumnDefinitions="* Auto">
 
-                            <controls:TabsItemsPresenter Name="PART_ItemsPresenter"
+							<controls:TabsItemsPresenter Name="PART_ItemsPresenter"
                                                          Items="{TemplateBinding Items}"
                                                          ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                         ItemTemplate="{TemplateBinding ItemTemplate}"/>
+                                                         ItemTemplate="{TemplateBinding ItemTemplate}">
+                            </controls:TabsItemsPresenter>
                             
                             <Button Classes="AddItemCommandButtonStyle"
+                                    Name="DefaultAddButton"
                                     Grid.Column="1"
                                     Command="{Binding $parent[controls:TabsControl].AddItem}"
                                     IsVisible="{TemplateBinding ShowDefaultAddButton}"/>

@@ -21,6 +21,17 @@ public class TabsItemsPresenter : ItemsPresenter
     public static readonly StyledProperty<int> FixedItemCountProperty =
         AvaloniaProperty.Register<TabsControl, int>(nameof(FixedItemCount));
 
+    public static readonly DirectProperty<TabsItemsPresenter, double> ItemsPresenterWidthProperty =
+        AvaloniaProperty.RegisterDirect<TabsItemsPresenter, double>(nameof(ItemsPresenterWidth),
+            o => o.ItemsPresenterWidth, (o, v) => o.ItemsPresenterWidth = v);
+
+    public static readonly DirectProperty<TabsItemsPresenter, double> ItemsPresenterHeightProperty =
+        AvaloniaProperty.RegisterDirect<TabsItemsPresenter, double>(nameof(ItemsPresenterHeight),
+            o => o.ItemsPresenterHeight, (o, v) => o.ItemsPresenterHeight = v);
+
+    private double _itemsPresenterWidth;
+    private double _itemsPresenterHeight;
+
     #endregion
 
     #region Public Properties
@@ -41,6 +52,18 @@ public class TabsItemsPresenter : ItemsPresenter
     {
         get => GetValue(FixedItemCountProperty);
         set => SetValue(FixedItemCountProperty, value);
+    }
+
+    public double ItemsPresenterWidth
+    {
+        get => _itemsPresenterWidth;
+        private set => SetAndRaise(ItemsPresenterWidthProperty, ref _itemsPresenterWidth, value);
+    }
+
+    public double ItemsPresenterHeight
+    {
+        get => _itemsPresenterHeight;
+        private set => SetAndRaise(ItemsPresenterHeightProperty, ref _itemsPresenterHeight, value);
     }
 
     #endregion
@@ -134,7 +157,10 @@ public class TabsItemsPresenter : ItemsPresenter
 
         ItemsOrganiser.Organise(maxConstraint, dragablzItems);
         var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems);
-        
+
+        ItemsPresenterWidth = measure.Width;
+        ItemsPresenterHeight = measure.Height;
+
         var width = !double.IsInfinity(measure.Width) ? measure.Width : availableSize.Width;
         var height = !double.IsInfinity(measure.Height) ? measure.Height : availableSize.Height;
 
@@ -191,7 +217,10 @@ public class TabsItemsPresenter : ItemsPresenter
         currentItem.X = desiredLocation.X;
         currentItem.Y = desiredLocation.Y;
         
-        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem);
+        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, out var size);
+
+        ItemsPresenterWidth = size.Width;
+        ItemsPresenterHeight = size.Height;
 
         currentItem.BringIntoView();
         
@@ -223,6 +252,4 @@ public class TabsItemsPresenter : ItemsPresenter
     }
 
     #endregion
-
-   
 }

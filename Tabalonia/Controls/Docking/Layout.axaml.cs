@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
+using Tabalonia.Docking;
 
 namespace Tabalonia.Controls.Docking;
 
@@ -15,6 +16,8 @@ public class Layout : ContentControl, IStyleable
     private const string LeftDropZonePartName = "PART_LeftDropZone";
 
     private bool _isParticipatingInDrag;
+
+    private IReadOnlyDictionary<DropZoneLocation, DropZone> _dropZones = null!;
 
     #endregion
 
@@ -54,8 +57,20 @@ public class Layout : ContentControl, IStyleable
 
     #endregion
 
+    #region Protected Methods
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        _dropZones = new Dictionary<DropZoneLocation, DropZone>
+        {
+            {DropZoneLocation.Top, e.Find<DropZone>(TopDropZonePartName)},
+            {DropZoneLocation.Right, e.Find<DropZone>(RightDropZonePartName)},
+            {DropZoneLocation.Bottom, e.Find<DropZone>(BottomDropZonePartName)},
+            {DropZoneLocation.Left, e.Find<DropZone>(LeftDropZonePartName)}
+        };
     }
+
+    #endregion
 }
