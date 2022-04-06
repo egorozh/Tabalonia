@@ -15,7 +15,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     private readonly Orientation _orientation;
     private readonly double _itemOffset;
-    private readonly Func<Control, double> _getDesiredSize;
+    private readonly Func<IControl, double> _getDesiredSize;
     private readonly Func<DragTabItem, double> _getLocation;
     private readonly Action<DragTabItem, double> _setLocation;
     private readonly AvaloniaProperty _canvasProperty;
@@ -53,7 +53,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     #region Public Methods
 
-    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items, Button? addButton)
+    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -68,7 +68,7 @@ public abstract class StackOrganiser : IItemsOrganiser
         OrganiseInternal(measureBounds, sortedItems, addButton);
     }
 
-    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items, Button? addButton)
+    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items, IControl? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -84,7 +84,7 @@ public abstract class StackOrganiser : IItemsOrganiser
         _siblingItemLocationOnDragStart = siblingItems.Select(GetLocationInfo).ToDictionary(loc => loc.Item);
     }
 
-    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, Button? addButton)
+    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, IControl? addButton)
     {
         if (siblingItems == null) throw new ArgumentNullException(nameof(siblingItems));
         if (dragItem == null) throw new ArgumentNullException(nameof(dragItem));
@@ -139,7 +139,7 @@ public abstract class StackOrganiser : IItemsOrganiser
     }
 
     public Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation,
-        DragTabItem dragTabItem, Button? addButton)
+        DragTabItem dragTabItem, IControl? addButton)
     {
         var fixedItems = requestor.FixedItemCount;
         var lowerBound = fixedItems == 0
@@ -162,7 +162,7 @@ public abstract class StackOrganiser : IItemsOrganiser
     }
 
     public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items,
-        Button? addButton)
+        IControl? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -211,7 +211,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     #region Private Methods
 
-    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items, Button? addButton)
+    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton)
     {
         var currentCoord = 0.0;
         var z = int.MaxValue;

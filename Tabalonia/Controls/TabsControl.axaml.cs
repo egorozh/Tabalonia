@@ -311,7 +311,7 @@ public class TabsControl : TabControl
             return;
 
         if (ShowDefaultAddButton)
-            ItemsPresenter.AddButton = AddButtonTemplate?.Build() as Button ?? new Button {Content = "+"};
+            ItemsPresenter.AddButton = AddButtonTemplate?.Build() ?? new Button {Content = "+"};
         else
             ItemsPresenter.AddButton = null;
     }

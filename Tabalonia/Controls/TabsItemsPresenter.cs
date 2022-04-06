@@ -10,10 +10,12 @@ namespace Tabalonia.Controls;
 
 public class TabsItemsPresenter : ItemsPresenter
 {
-    private double _itemsPresenterWidth;
-    private double _itemsPresenterHeight;
-    private Button? _prevAddButton;
+    #region Private Fields
 
+    private IControl? _prevAddButton;
+
+    #endregion
+    
     #region Avalonia Properties
 
     public static readonly StyledProperty<double> AdjacentHeaderItemOffsetProperty =
@@ -24,17 +26,6 @@ public class TabsItemsPresenter : ItemsPresenter
 
     public static readonly StyledProperty<int> FixedItemCountProperty =
         AvaloniaProperty.Register<TabsControl, int>(nameof(FixedItemCount));
-
-    public static readonly DirectProperty<TabsItemsPresenter, double> ItemsPresenterWidthProperty =
-        AvaloniaProperty.RegisterDirect<TabsItemsPresenter, double>(nameof(ItemsPresenterWidth),
-            o => o.ItemsPresenterWidth, (o, v) => o.ItemsPresenterWidth = v);
-
-    public static readonly DirectProperty<TabsItemsPresenter, double> ItemsPresenterHeightProperty =
-        AvaloniaProperty.RegisterDirect<TabsItemsPresenter, double>(nameof(ItemsPresenterHeight),
-            o => o.ItemsPresenterHeight, (o, v) => o.ItemsPresenterHeight = v);
-
-
-    internal Button? AddButton { get; set; }
 
     #endregion
 
@@ -58,17 +49,11 @@ public class TabsItemsPresenter : ItemsPresenter
         set => SetValue(FixedItemCountProperty, value);
     }
 
-    public double ItemsPresenterWidth
-    {
-        get => _itemsPresenterWidth;
-        private set => SetAndRaise(ItemsPresenterWidthProperty, ref _itemsPresenterWidth, value);
-    }
+    #endregion
 
-    public double ItemsPresenterHeight
-    {
-        get => _itemsPresenterHeight;
-        private set => SetAndRaise(ItemsPresenterHeightProperty, ref _itemsPresenterHeight, value);
-    }
+    #region Internal Properties
+
+    internal IControl? AddButton { get; set; }
 
     #endregion
 
@@ -149,6 +134,8 @@ public class TabsItemsPresenter : ItemsPresenter
 
     #endregion
 
+    #region Protected Methods
+
     protected override Size MeasureOverride(Size availableSize)
     {
         //if (LockedMeasure.HasValue)
@@ -161,26 +148,25 @@ public class TabsItemsPresenter : ItemsPresenter
         var dragablzItems = DragablzItems();
         var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-        
-        if (_prevAddButton != null) 
+
+        if (_prevAddButton != null)
             this.Panel.Children.Remove(_prevAddButton);
 
         _prevAddButton = AddButton;
-        
+
         if (AddButton != null)
             this.Panel.Children.Add(_prevAddButton);
 
         ItemsOrganiser.Organise(maxConstraint, dragablzItems, AddButton);
         var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems, AddButton);
 
-        ItemsPresenterWidth = measure.Width;
-        ItemsPresenterHeight = measure.Height;
-
         var width = !double.IsInfinity(measure.Width) ? measure.Width : availableSize.Width;
         var height = !double.IsInfinity(measure.Height) ? measure.Height : availableSize.Height;
 
         return new Size(width, height);
     }
+
+    #endregion
 
     #region Internal Methods
 
