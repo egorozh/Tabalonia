@@ -220,7 +220,7 @@ public class TabsItemsPresenter : ItemsPresenter
             return;
         }
 
-        desiredLocation = ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation);
+        desiredLocation = ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation, currentItem, AddButton);
 
         var siblingsItems = DragablzItems().Except(new[] {currentItem}).ToList();
 

@@ -15,7 +15,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     private readonly Orientation _orientation;
     private readonly double _itemOffset;
-    private readonly Func<DragTabItem, double> _getDesiredSize;
+    private readonly Func<Control, double> _getDesiredSize;
     private readonly Func<DragTabItem, double> _getLocation;
     private readonly Action<DragTabItem, double> _setLocation;
     private readonly AvaloniaProperty _canvasProperty;
@@ -109,7 +109,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         var dragItemMaxCoord = _getLocation(dragItem) + _getDesiredSize(dragItem);
         var defaultCoord = currentCoord - _itemOffset;
-        
+
         addButton?.SetValue(_canvasProperty, dragItemMaxCoord > defaultCoord ? dragItemMaxCoord : defaultCoord);
 
         dragItem.ZIndex = int.MaxValue;
@@ -138,7 +138,8 @@ public abstract class StackOrganiser : IItemsOrganiser
         dragItem.ZIndex = int.MaxValue;
     }
 
-    public Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation)
+    public Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation,
+        DragTabItem dragTabItem, Button? addButton)
     {
         var fixedItems = requestor.FixedItemCount;
         var lowerBound = fixedItems == 0
@@ -147,15 +148,15 @@ public abstract class StackOrganiser : IItemsOrganiser
                 .Take(fixedItems)
                 .Last()).End + _itemOffset - 1;
 
-        var x = _orientation == Orientation.Vertical
-            ? 0
-            : Math.Min(Math.Max(lowerBound, itemDesiredLocation.X), (measureBounds.Width) + 1);
+        var itemLocation = _orientation == Orientation.Horizontal ? itemDesiredLocation.X : itemDesiredLocation.Y;
+        var boundsValue = _orientation == Orientation.Horizontal ? measureBounds.Width : measureBounds.Height;
 
-        var y = _orientation == Orientation.Horizontal
-            ? 0
-            : Math.Min(Math.Max(lowerBound, itemDesiredLocation.Y), (measureBounds.Height) + 1);
+        var x = Math.Min(Math.Max(lowerBound, itemLocation),
+            boundsValue - _getDesiredSize(dragTabItem) - (addButton == null ? 0 : _getDesiredSize(addButton)));
 
-        return new Point(x, y);
+        const int y = 0;
+
+        return _orientation == Orientation.Horizontal ? new Point(x, y) : new Point(y, 0);
     }
 
     public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items,

@@ -14,7 +14,8 @@ public interface IItemsOrganiser
 
     IEnumerable<DragTabItem> Sort(IEnumerable<DragTabItem> items);
 
-    Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation);
+    Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation,
+        DragTabItem dragTabItem, Button? addButton);
 
     void Organise(Size maxConstraint, IEnumerable<DragTabItem> dragablzItems, Button? addButton);
 
