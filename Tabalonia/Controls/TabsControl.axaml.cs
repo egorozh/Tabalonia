@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections;
 using System.Collections.Specialized;
+using Avalonia.Markup.Xaml.Templates;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
@@ -16,7 +17,7 @@ public class TabsControl : TabControl
 {
     #region Internal Fields
 
-    internal TabsItemsPresenter ItemsPresenter = null!;
+    internal TabsItemsPresenter? ItemsPresenter;
 
     #endregion
 
@@ -36,6 +37,9 @@ public class TabsControl : TabControl
 
     public static readonly StyledProperty<int> FixedHeaderCountProperty =
         AvaloniaProperty.Register<TabsControl, int>(nameof(FixedHeaderCount));
+
+    public static readonly StyledProperty<Template?> AddButtonTemplateProperty =
+        AvaloniaProperty.Register<TabsControl, Template?>(nameof(AddButtonTemplate));
 
     #endregion
 
@@ -75,9 +79,21 @@ public class TabsControl : TabControl
         set => SetValue(FixedHeaderCountProperty, value);
     }
 
+    public Template? AddButtonTemplate
+    {
+        get => GetValue(AddButtonTemplateProperty);
+        set => SetValue(AddButtonTemplateProperty, value);
+    }
+
     #endregion
 
     #region Constructor
+
+    static TabsControl()
+    {
+        ShowDefaultAddButtonProperty.Changed.Subscribe(OnShowDefaultAddButtonChanged);
+        AddButtonTemplateProperty.Changed.Subscribe(OnAddButtonTemplateChanged);
+    }
 
     public TabsControl()
     {
@@ -87,6 +103,7 @@ public class TabsControl : TabControl
     }
 
     #endregion
+
 
     #region Public Methods
 
@@ -126,7 +143,7 @@ public class TabsControl : TabControl
         if (!cancel)
             RemoveItem(tabItem);
     }
-    
+
     /// <summary>
     /// Adds an item to the source collection.  If the InterTabController.InterTabClient is set that instance will be deferred to.
     /// Otherwise an attempt will be made to add to the <see cref="ItemsSource" /> property, and lastly <see cref="Items"/>.
@@ -252,6 +269,8 @@ public class TabsControl : TabControl
         base.OnApplyTemplate(e);
 
         ItemsPresenter = e.NameScope.Get<TabsItemsPresenter>("PART_ItemsPresenter");
+
+        CreateAddButton();
     }
 
     protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -270,7 +289,33 @@ public class TabsControl : TabControl
 
     #endregion
 
+    #region Private Static Methods
+
+    private static void OnShowDefaultAddButtonChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        ((TabsControl) args.Sender).CreateAddButton();
+    }
+
+    private static void OnAddButtonTemplateChanged(AvaloniaPropertyChangedEventArgs args)
+    {
+        ((TabsControl) args.Sender).CreateAddButton();
+    }
+
+    #endregion
+
     #region Private Methods
+
+    private void CreateAddButton()
+    {
+        if (ItemsPresenter == null)
+            return;
+
+        if (ShowDefaultAddButton)
+            ItemsPresenter.AddButton = AddButtonTemplate?.Build() as Button ?? new Button {Content = "+"};
+        else
+            ItemsPresenter.AddButton = null;
+    }
+
 
     private void ItemDragStarted(object? sender, DragablzDragStartedEventArgs e)
     {
@@ -289,7 +334,7 @@ public class TabsControl : TabControl
         //_tabHeaderDragStartInformation = new TabHeaderDragStartInformation(e.DragablzItem, itemsControlOffset.X,
         //    itemsControlOffset.Y, e.DragStartedEventArgs.HorizontalOffset, e.DragStartedEventArgs.VerticalOffset);
 
-        var siblingsItems = ItemsPresenter.DragablzItems().Except(new[] { draggedItem });
+        var siblingsItems = ItemsPresenter.DragablzItems().Except(new[] {draggedItem});
 
         foreach (var otherItem in siblingsItems)
             otherItem.IsSelected = false;
@@ -330,7 +375,7 @@ public class TabsControl : TabControl
         }
 
         if (originalSource is ILogical logical &&
-            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is { PlacementTarget: { } placementTarget })
+            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
         {
             return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
         }

@@ -29,29 +29,28 @@
     <Style Selector="controls|TabsControl">
         <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
         <Setter Property="ShowDefaultAddButton" Value="True" />
-        <Setter Property="Template">
-            <ControlTemplate TargetType="controls:TabsControl">
-                <Border BorderBrush="{TemplateBinding BorderBrush}"
+        <Setter Property="AddButtonTemplate">
+            <Template>
+                <Button Classes="AddItemCommandButtonStyle"
+                        Command="{Binding $parent[controls:TabsControl].AddItem}"
+                        IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
+			</Template>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate TargetType="controls:TabsControl">
+				<Border BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                    <Grid RowDefinitions="Auto *">
-                        <Grid ColumnDefinitions="* Auto">
-
-							<controls:TabsItemsPresenter Name="PART_ItemsPresenter"
-                                                         Items="{TemplateBinding Items}"
-                                                         ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                         ItemTemplate="{TemplateBinding ItemTemplate}">
-                            </controls:TabsItemsPresenter>
-                            
-                            <Button Classes="AddItemCommandButtonStyle"
-                                    Name="DefaultAddButton"
-                                    Grid.Column="1"
-                                    Command="{Binding $parent[controls:TabsControl].AddItem}"
-                                    IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
-                        </Grid>
+					<Grid RowDefinitions="Auto *">
+                        <controls:TabsItemsPresenter Name="PART_ItemsPresenter"
+                                                     HorizontalAlignment="Stretch"
+                                                     Items="{TemplateBinding Items}"
+                                                     ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                     ItemTemplate="{TemplateBinding ItemTemplate}">
+                        </controls:TabsItemsPresenter>
                         
                         <ContentPresenter Grid.Row="1" 
                                           Name="PART_SelectedContentHost"

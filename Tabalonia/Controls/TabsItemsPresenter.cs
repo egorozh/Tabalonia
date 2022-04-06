@@ -10,6 +10,10 @@ namespace Tabalonia.Controls;
 
 public class TabsItemsPresenter : ItemsPresenter
 {
+    private double _itemsPresenterWidth;
+    private double _itemsPresenterHeight;
+    private Button? _prevAddButton;
+
     #region Avalonia Properties
 
     public static readonly StyledProperty<double> AdjacentHeaderItemOffsetProperty =
@@ -29,8 +33,8 @@ public class TabsItemsPresenter : ItemsPresenter
         AvaloniaProperty.RegisterDirect<TabsItemsPresenter, double>(nameof(ItemsPresenterHeight),
             o => o.ItemsPresenterHeight, (o, v) => o.ItemsPresenterHeight = v);
 
-    private double _itemsPresenterWidth;
-    private double _itemsPresenterHeight;
+
+    internal Button? AddButton { get; set; }
 
     #endregion
 
@@ -74,11 +78,11 @@ public class TabsItemsPresenter : ItemsPresenter
     {
         HorizontalAlignment = HorizontalAlignment.Left;
         VerticalAlignment = VerticalAlignment.Top;
-        
+
         AddHandler(DragTabItem.DragStarted, ItemDragStarted);
         AddHandler(DragTabItem.DragDelta, ItemDragDelta);
         AddHandler(DragTabItem.DragCompleted, ItemDragCompleted);
-        
+
         SetValue(ItemsOrganiserProperty, new HorizontalOrganiser(GetValue(AdjacentHeaderItemOffsetProperty)));
     }
 
@@ -93,10 +97,10 @@ public class TabsItemsPresenter : ItemsPresenter
 
     private static void AdjacentHeaderItemOffsetPropertyChangedCallback(AvaloniaPropertyChangedEventArgs args)
     {
-        var instance = (TabsItemsPresenter)args.Sender;
+        var instance = (TabsItemsPresenter) args.Sender;
 
         if (args.NewValue != null)
-            instance.SetValue(ItemsOrganiserProperty, new HorizontalOrganiser((double)args.NewValue));
+            instance.SetValue(ItemsOrganiserProperty, new HorizontalOrganiser((double) args.NewValue));
     }
 
     #endregion
@@ -105,9 +109,9 @@ public class TabsItemsPresenter : ItemsPresenter
 
     public void MoveItem(MoveItemRequest moveItemRequest)
     {
-        var dragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(moveItemRequest.Item); 
+        var dragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(moveItemRequest.Item);
         var contextDragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(moveItemRequest.Context);
-       
+
         if (dragablzItem == null) return;
 
         var sortedItems = DragablzItems().OrderBy(di => di.LogicalIndex).ToList();
@@ -127,7 +131,9 @@ public class TabsItemsPresenter : ItemsPresenter
                     return;
 
                 var contextIndex = sortedItems.IndexOf(contextDragablzItem);
-                sortedItems.Insert(moveItemRequest.AddLocationHint == AddLocationHint.Prior ? contextIndex : contextIndex + 1, dragablzItem);
+                sortedItems.Insert(
+                    moveItemRequest.AddLocationHint == AddLocationHint.Prior ? contextIndex : contextIndex + 1,
+                    dragablzItem);
 
                 break;
             default:
@@ -138,7 +144,7 @@ public class TabsItemsPresenter : ItemsPresenter
         var orderedEnumerable = sortedItems.OrderBy(di => sortedItems.IndexOf(di));
 
         var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
-        ItemsOrganiser.Organise(maxConstraint, orderedEnumerable);
+        ItemsOrganiser.Organise(maxConstraint, orderedEnumerable, AddButton);
     }
 
     #endregion
@@ -155,8 +161,17 @@ public class TabsItemsPresenter : ItemsPresenter
         var dragablzItems = DragablzItems();
         var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-        ItemsOrganiser.Organise(maxConstraint, dragablzItems);
-        var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems);
+        
+        if (_prevAddButton != null) 
+            this.Panel.Children.Remove(_prevAddButton);
+
+        _prevAddButton = AddButton;
+        
+        if (AddButton != null)
+            this.Panel.Children.Add(_prevAddButton);
+
+        ItemsOrganiser.Organise(maxConstraint, dragablzItems, AddButton);
+        var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems, AddButton);
 
         ItemsPresenterWidth = measure.Width;
         ItemsPresenterHeight = measure.Height;
@@ -171,7 +186,7 @@ public class TabsItemsPresenter : ItemsPresenter
 
     internal IReadOnlyList<DragTabItem> DragablzItems()
     {
-        return this.ItemContainerGenerator.Containers<DragTabItem>().ToList();  
+        return this.ItemContainerGenerator.Containers<DragTabItem>().ToList();
     }
 
     #endregion
@@ -181,8 +196,8 @@ public class TabsItemsPresenter : ItemsPresenter
     private void ItemDragStarted(object? sender, DragablzDragStartedEventArgs eventArgs)
     {
         DragTabItem currentItem = eventArgs.DragablzItem;
-        
-        var siblingItems = DragablzItems().Except(new[] { currentItem }).ToList();
+
+        var siblingItems = DragablzItems().Except(new[] {currentItem}).ToList();
         ItemsOrganiser.OrganiseOnDragStarted(siblingItems, currentItem);
 
         eventArgs.Handled = true;
@@ -193,7 +208,7 @@ public class TabsItemsPresenter : ItemsPresenter
     private void ItemDragDelta(object? sender, DragablzDragDeltaEventArgs eventArgs)
     {
         DragTabItem currentItem = eventArgs.DragablzItem;
-        
+
         var desiredLocation = new Point(
             currentItem.X + eventArgs.DragDeltaEventArgs.Vector.X,
             currentItem.Y + eventArgs.DragDeltaEventArgs.Vector.Y);
@@ -207,7 +222,7 @@ public class TabsItemsPresenter : ItemsPresenter
 
         desiredLocation = ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation);
 
-        var siblingsItems = DragablzItems().Except(new[] { currentItem }).ToList();
+        var siblingsItems = DragablzItems().Except(new[] {currentItem}).ToList();
 
         foreach (var dragableItem in siblingsItems)
             dragableItem.IsSiblingDragging = true;
@@ -216,14 +231,11 @@ public class TabsItemsPresenter : ItemsPresenter
 
         currentItem.X = desiredLocation.X;
         currentItem.Y = desiredLocation.Y;
-        
-        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, out var size);
 
-        ItemsPresenterWidth = size.Width;
-        ItemsPresenterHeight = size.Height;
+        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, AddButton);
 
         currentItem.BringIntoView();
-        
+
         eventArgs.Handled = true;
     }
 
@@ -239,15 +251,15 @@ public class TabsItemsPresenter : ItemsPresenter
                 return i;
             })
             .ToList();
-        
-        var siblingsItems = dragablzItems.Except(new[] { draggedItem });
+
+        var siblingsItems = dragablzItems.Except(new[] {draggedItem});
 
         ItemsOrganiser.OrganiseOnDragCompleted(siblingsItems, draggedItem);
-        
+
         //wowsers
         Dispatcher.UIThread.Post(InvalidateMeasure);
         //Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
-        
+
         eventArgs.Handled = true;
     }
 

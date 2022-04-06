@@ -53,7 +53,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     #region Public Methods
 
-    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items)
+    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items, Button? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -65,14 +65,14 @@ public abstract class StackOrganiser : IItemsOrganiser
                     .ThenAscending(tuple => tuple.Item1))
             .Select(tuple => tuple.Item2);
 
-        OrganiseInternal(measureBounds, sortedItems);
+        OrganiseInternal(measureBounds, sortedItems, addButton);
     }
 
-    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items)
+    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items, Button? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
-        OrganiseInternal(measureBounds, items);
+        OrganiseInternal(measureBounds, items, addButton);
     }
 
     public void OrganiseOnDragStarted(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem)
@@ -84,7 +84,7 @@ public abstract class StackOrganiser : IItemsOrganiser
         _siblingItemLocationOnDragStart = siblingItems.Select(GetLocationInfo).ToDictionary(loc => loc.Item);
     }
 
-    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem)
+    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, Button? addButton)
     {
         if (siblingItems == null) throw new ArgumentNullException(nameof(siblingItems));
         if (dragItem == null) throw new ArgumentNullException(nameof(dragItem));
@@ -103,9 +103,14 @@ public abstract class StackOrganiser : IItemsOrganiser
                 SendToLocation(item, currentCoord);
                 item.ZIndex = --zIndex;
             }
-            
+
             currentCoord += _getDesiredSize(item) + _itemOffset;
         }
+
+        var dragItemMaxCoord = _getLocation(dragItem) + _getDesiredSize(dragItem);
+        var defaultCoord = currentCoord - _itemOffset;
+        
+        addButton?.SetValue(_canvasProperty, dragItemMaxCoord > defaultCoord ? dragItemMaxCoord : defaultCoord);
 
         dragItem.ZIndex = int.MaxValue;
     }
@@ -142,16 +147,19 @@ public abstract class StackOrganiser : IItemsOrganiser
                 .Take(fixedItems)
                 .Last()).End + _itemOffset - 1;
 
-        var x = _orientation == Orientation.Vertical ? 0
+        var x = _orientation == Orientation.Vertical
+            ? 0
             : Math.Min(Math.Max(lowerBound, itemDesiredLocation.X), (measureBounds.Width) + 1);
 
-        var y = _orientation == Orientation.Horizontal ? 0
+        var y = _orientation == Orientation.Horizontal
+            ? 0
             : Math.Min(Math.Max(lowerBound, itemDesiredLocation.Y), (measureBounds.Height) + 1);
 
         return new Point(x, y);
     }
 
-    public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items)
+    public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items,
+        Button? addButton)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -163,9 +171,9 @@ public abstract class StackOrganiser : IItemsOrganiser
         foreach (var dragTabItem in items)
         {
             dragTabItem.Measure(size);
-            
+
             var loaded = dragTabItem.IsArrangeValid;
-            
+
             if (_orientation == Orientation.Horizontal)
             {
                 height = Math.Max(height,
@@ -195,12 +203,12 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         return items.OrderBy(i => GetLocationInfo(i).Start);
     }
-    
+
     #endregion
-    
+
     #region Private Methods
 
-    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items)
+    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items, Button? addButton)
     {
         var currentCoord = 0.0;
         var z = int.MaxValue;
@@ -212,10 +220,12 @@ public abstract class StackOrganiser : IItemsOrganiser
             newItem.LogicalIndex = logicalIndex++;
             newItem.Measure(measureBounds);
             var desiredSize = _getDesiredSize(newItem);
-            if (desiredSize == 0.0) 
+            if (desiredSize == 0.0)
                 desiredSize = 1.0; //no measure? create something to help sorting
             currentCoord += desiredSize + _itemOffset;
         }
+
+        addButton?.SetValue(_canvasProperty, currentCoord - _itemOffset);
     }
 
     private IEnumerable<LocationInfo> GetLocations(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem)
@@ -232,7 +242,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         var currentLocations = siblingItems
             .Select(GetLocationInfo)
-            .Union(new[] { GetLocationInfo(dragItem) })
+            .Union(new[] {GetLocationInfo(dragItem)})
             .OrderBy(OrderSelector);
 
         return currentLocations;
@@ -269,11 +279,10 @@ public abstract class StackOrganiser : IItemsOrganiser
             }
         };
 
-        await animation.RunAsync(dragTabItem,null);
-       
+        await animation.RunAsync(dragTabItem, null);
+
         _setLocation(dragTabItem, location);
         _activeStoryboardTargetLocations.Remove(dragTabItem);
-        
     }
 
     private LocationInfo GetLocationInfo(DragTabItem item)
@@ -286,9 +295,9 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         return new LocationInfo(item, startLocation, midLocation, endLocation);
     }
-    
+
     #endregion
-    
+
     #region Private Structs
 
     private readonly record struct LocationInfo(DragTabItem Item, double Start, double Mid, double End);

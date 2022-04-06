@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Tabalonia.Controls;
 
 namespace Tabalonia.Organisers;
@@ -7,7 +8,7 @@ public interface IItemsOrganiser
 {
     void OrganiseOnDragStarted(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem);
 
-    void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem);
+    void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, Button? addButton);
 
     void OrganiseOnDragCompleted( IEnumerable<DragTabItem> siblingsItems, DragTabItem dragItem);
 
@@ -15,9 +16,9 @@ public interface IItemsOrganiser
 
     Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation);
 
-    void Organise(Size maxConstraint, IEnumerable<DragTabItem> dragablzItems);
+    void Organise(Size maxConstraint, IEnumerable<DragTabItem> dragablzItems, Button? addButton);
 
-    void Organise(Size maxConstraint, IOrderedEnumerable<DragTabItem> dragablzItems);
+    void Organise(Size maxConstraint, IOrderedEnumerable<DragTabItem> dragablzItems, Button? addButton);
 
-    Size Measure(TabsItemsPresenter requestor, Rect bounds, IEnumerable<DragTabItem> dragablzItems);
+    Size Measure(TabsItemsPresenter requestor, Rect bounds, IEnumerable<DragTabItem> dragablzItems, Button? addButton);
 }
