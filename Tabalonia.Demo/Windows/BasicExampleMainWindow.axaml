@@ -4,11 +4,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Tabalonia.Controls;assembly=Tabalonia"
         xmlns:dragablzDemo="clr-namespace:Tabalonia.Demo.ViewModels"
+        xmlns:tabalonia="clr-namespace:Tabalonia;assembly=Tabalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Tabalonia.Demo.Windows.BasicExampleMainWindow"
         Title="BasicExampleMainWindow">
 
 	<controls:TabsControl >
+        <controls:TabsControl.InterTabController>
+            <tabalonia:InterTabController  />
+        </controls:TabsControl.InterTabController>
 
         <TabItem Header="Basic mvvm tabs example">
             <controls:TabsControl Margin="8 8 8 8"
@@ -17,6 +21,9 @@
                                   ShowDefaultAddButton="True"
                                   ShowDefaultCloseButton="True"
                                   NewItemFactory="{Binding NewItemFactory}">
+                <controls:TabsControl.InterTabController>
+                    <tabalonia:InterTabController  />
+                </controls:TabsControl.InterTabController>
                 <TabControl.ContentTemplate>
                     <DataTemplate DataType="{x:Type dragablzDemo:SimpleViewModel}">
                         <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">

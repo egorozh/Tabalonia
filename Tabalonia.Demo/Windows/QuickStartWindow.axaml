@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Tabalonia.Controls;assembly=Tabalonia"
         xmlns:docking="clr-namespace:Tabalonia.Controls.Docking;assembly=Tabalonia"
+        xmlns:tabalonia="clr-namespace:Tabalonia;assembly=Tabalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Tabalonia.Demo.Windows.QuickStartWindow"
 
@@ -13,8 +14,10 @@
 
 	<docking:Layout >
         <controls:TabsControl Name="TabsControl">
-
-            <TabItem Header="Tab No. 1" IsSelected="True">
+			<controls:TabsControl.InterTabController>
+				<tabalonia:InterTabController  />
+			</controls:TabsControl.InterTabController>
+			<TabItem Header="Tab No. 1" IsSelected="True">
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center">

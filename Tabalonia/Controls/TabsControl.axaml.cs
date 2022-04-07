@@ -3,18 +3,22 @@ using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections;
 using System.Collections.Specialized;
-using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Layout;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
 
 public class TabsControl : TabControl
 {
+    private Point _pointerPositionOnHeaderItemsControl;
+
     #region Internal Fields
 
     internal TabsItemsPresenter? ItemsPresenter;
@@ -30,7 +34,7 @@ public class TabsControl : TabControl
         AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton));
 
     /// <summary>
-    /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItemCommand"/>.
+    /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItem"/>.
     /// </summary>
     public static readonly StyledProperty<Func<object>> NewItemFactoryProperty =
         AvaloniaProperty.Register<TabsControl, Func<object>>(nameof(NewItemFactory));
@@ -41,9 +45,22 @@ public class TabsControl : TabControl
     public static readonly StyledProperty<Template?> AddButtonTemplateProperty =
         AvaloniaProperty.Register<TabsControl, Template?>(nameof(AddButtonTemplate));
 
+    public static readonly StyledProperty<InterTabController?> InterTabControllerProperty =
+        AvaloniaProperty.Register<TabsControl, InterTabController?>(nameof(InterTabController));
+
     #endregion
 
     #region Public Properties
+
+    /// <summary>
+    /// An <see cref="InterTabController"/> must be provided to enable tab tearing. Behaviour customisations can be applied
+    /// vie the controller.
+    /// </summary>
+    public InterTabController? InterTabController
+    {
+        get => GetValue(InterTabControllerProperty);
+        set => SetValue(InterTabControllerProperty, value);
+    }
 
     public bool ShowDefaultAddButton
     {
@@ -53,7 +70,7 @@ public class TabsControl : TabControl
 
     /// <summary>
     /// Indicates whether a default close button should be displayed.  If manually templating the tab header content the close command 
-    /// can be called by executing the <see cref="TabablzControl.CloseItemCommand"/> command (typically via a <see cref="Button"/>).
+    /// can be called by executing the <see cref="CloseItem"/> command (typically via a <see cref="Button"/>).
     /// </summary>
     public bool ShowDefaultCloseButton
     {
@@ -62,7 +79,7 @@ public class TabsControl : TabControl
     }
 
     /// <summary>
-    /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItemCommand"/>.
+    /// Allows a factory to be provided for generating new items. Typically used in conjunction with <see cref="AddItem"/>.
     /// </summary>
     public Func<object> NewItemFactory
     {
@@ -99,6 +116,8 @@ public class TabsControl : TabControl
     {
         ItemsPanel = new FuncTemplate<IPanel>(() => new Canvas());
         AddHandler(DragTabItem.DragStarted, ItemDragStarted, handledEventsToo: true);
+        AddHandler(DragTabItem.PreviewDragDelta, PreviewItemDragDelta, handledEventsToo: true);
+        AddHandler(DragTabItem.DragDelta, ItemDragDelta, handledEventsToo: true);
         AddHandler(DragTabItem.DragCompleted, ItemDragCompleted, handledEventsToo: true);
     }
 
@@ -301,6 +320,32 @@ public class TabsControl : TabControl
         ((TabsControl) args.Sender).CreateAddButton();
     }
 
+    private static DragTabItem? FindDragTabItem(object originalSource)
+    {
+        if (originalSource is DragTabItem dragTabItem)
+            return dragTabItem;
+
+        if (originalSource is IVisual visual &&
+            visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
+        {
+            return item;
+        }
+
+        if (originalSource is ILogical logical &&
+            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
+        {
+            return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
+        }
+
+        return null;
+    }
+
+    private static TabsItemsPresenter? ItemsPresenterFromItemContainer(DragTabItem tabItem)
+        => tabItem.VisualTreeAncestory().OfType<TabsItemsPresenter>().LastOrDefault();
+
+    private static TabsControl? TabsControlFromItemContainer(DragTabItem tabItem)
+        => tabItem.VisualTreeAncestory().OfType<TabsControl>().LastOrDefault();
+
     #endregion
 
     #region Private Methods
@@ -359,34 +404,214 @@ public class TabsControl : TabControl
         //    IsDraggingWindow = true;
     }
 
+    private void PreviewItemDragDelta(object? sender, DragablzDragDeltaEventArgs e)
+    {
+        var draggedItem = e.DragablzItem;
+
+        var parentPresenter = ItemsPresenterFromItemContainer(draggedItem);
+
+        if (parentPresenter is not { } sourceOfDragItemsControl
+            || !Equals(sourceOfDragItemsControl, ItemsPresenter)) return;
+
+        if (MonitorReentry(e))
+            return;
+
+        var myWindow = this.GetWindow();
+        if (myWindow == null) return;
+    }
+
+    private void ItemDragDelta(object? sender, DragablzDragDeltaEventArgs e)
+    {
+        var draggedItem = e.DragablzItem;
+
+        if (!IsMyItem(draggedItem)) return;
+
+        if (FixedHeaderCount > 0 &&
+            ItemsPresenter.ItemsOrganiser.Sort(ItemsPresenter.DragablzItems())
+                .Take(FixedHeaderCount)
+                .Contains(draggedItem))
+            return;
+
+        //if (_tabHeaderDragStartInformation == null ||
+        //    !Equals(_tabHeaderDragStartInformation.DragItem, e.DragablzItem) || InterTabController == null) return;
+
+        //if (InterTabController.InterTabClient == null)
+        //    throw new InvalidOperationException("An InterTabClient must be provided on an InterTabController.");
+
+        MonitorBreach(e);
+    }
+
     private void ItemDragCompleted(object? sender, DragablzDragCompletedEventArgs e)
     {
     }
 
-    private static DragTabItem? FindDragTabItem(object originalSource)
+    protected override void OnPointerMoved(PointerEventArgs e)
     {
-        if (originalSource is DragTabItem dragTabItem)
-            return dragTabItem;
+        base.OnPointerMoved(e);
 
-        if (originalSource is IVisual visual &&
-            visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
-        {
-            return item;
-        }
-
-        if (originalSource is ILogical logical &&
-            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
-        {
-            return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
-        }
-
-        return null;
+        _pointerPositionOnHeaderItemsControl = e.GetPosition(ItemsPresenter);
     }
 
-    private static TabsItemsPresenter? ItemsPresenterFromItemContainer(DragTabItem tabItem)
-        => tabItem.VisualTreeAncestory().OfType<TabsItemsPresenter>().LastOrDefault();
+    private void MonitorBreach(DragablzDragDeltaEventArgs e)
+    {
+        //var horizontalPopoutGrace = InterTabController.HorizontalPopoutGrace;
+        //var verticalPopoutGrace = InterTabController.VerticalPopoutGrace;
+        var horizontalPopoutGrace = 8;
+        var verticalPopoutGrace = 8;
+
+        Orientation? breachOrientation = null;
+        if (_pointerPositionOnHeaderItemsControl.X < -horizontalPopoutGrace
+            || (_pointerPositionOnHeaderItemsControl.X - ItemsPresenter.Bounds.Width) > horizontalPopoutGrace)
+            breachOrientation = Orientation.Horizontal;
+        else if (_pointerPositionOnHeaderItemsControl.Y < -verticalPopoutGrace
+                 || (_pointerPositionOnHeaderItemsControl.Y - ItemsPresenter.Bounds.Height) > verticalPopoutGrace)
+            breachOrientation = Orientation.Vertical;
+
+        if (!breachOrientation.HasValue)
+            return;
+
+        var newTabHost = InterTabController.InterTabClient.GetNewHost(InterTabController.InterTabClient,
+            InterTabController.Partition, this);
+
+        if (newTabHost?.TabablzControl == null || newTabHost.Container == null)
+            throw new ApplicationException("New tab host was not correctly provided");
+
+        var item = ItemsPresenter.ItemContainerGenerator.FindItem(e.DragablzItem);
+        var isTransposing = IsTransposing(newTabHost.TabablzControl);
+
+        var myWindow = this.GetWindow();
+        if (myWindow == null) throw new ApplicationException("Unable to find owning window.");
+
+        /*
+                           
+         var dragStartWindowOffset = ConfigureNewHostSizeAndGetDragStartWindowOffset(myWindow, newTabHost, e.DragablzItem, isTransposing);
+
+         var dragableItemHeaderPoint = e.DragablzItem.TranslatePoint(new Point(), _dragablzItemsControl);
+         var dragableItemSize = new Size(e.DragablzItem.ActualWidth, e.DragablzItem.ActualHeight);
+         var floatingItemSnapShots = this.VisualTreeDepthFirstTraversal()
+             .OfType<Layout>()
+             .SelectMany(l => l.FloatingDragablzItems().Select(FloatingItemSnapShot.Take))
+             .ToList();            
+
+         var interTabTransfer = new InterTabTransfer(item, e.DragablzItem, breachOrientation.Value, dragStartWindowOffset, e.DragablzItem.MouseAtDragStart, dragableItemHeaderPoint, dragableItemSize, floatingItemSnapShots, isTransposing);
+
+         if (myWindow.WindowState == WindowState.Maximized)
+         {
+             var desktopMousePosition = Native.GetCursorPos().ToWpf();
+             newTabHost.Container.Left = desktopMousePosition.X - dragStartWindowOffset.X;
+             newTabHost.Container.Top = desktopMousePosition.Y - dragStartWindowOffset.Y;
+         }
+         else
+         {
+             newTabHost.Container.Left = myWindow.Left;
+             newTabHost.Container.Top = myWindow.Top;
+         }
+         newTabHost.Container.Show();
+         var contentPresenter = FindChildContentPresenter(item);
+
+         //stop the header shrinking if the tab stays open when empty
+         var minSize = EmptyHeaderSizingHint == EmptyHeaderSizingHint.PreviousTab
+             ? new Size(_dragablzItemsControl.ActualWidth, _dragablzItemsControl.ActualHeight)
+             : new Size();
+         System.Diagnostics.Debug.WriteLine("B " + minSize);
+
+         RemoveFromSource(item);
+         _itemsHolder.Children.Remove(contentPresenter);
+         if (Items.Count == 0)
+         {
+             _dragablzItemsControl.MinHeight = minSize.Height;
+             _dragablzItemsControl.MinWidth = minSize.Width;
+             Layout.ConsolidateBranch(this);
+         }
+
+         RestorePreviousSelection();
+
+         foreach (var dragablzItem in _dragablzItemsControl.DragablzItems())
+         {
+             dragablzItem.IsDragging = false;
+             dragablzItem.IsSiblingDragging = false;
+         }
+
+         newTabHost.TabablzControl.ReceiveDrag(interTabTransfer);
+         interTabTransfer.OriginatorContainer.IsDropTargetFound = true;
+         
+         */
+
+        e.Cancel = true;
+    }
+
+    private bool MonitorReentry(DragablzDragDeltaEventArgs e)
+    {
+        var draggedItem = e.DragablzItem;
+
+        var sourceTabablzControl = TabsControlFromItemContainer(draggedItem);
+
+        if (sourceTabablzControl.ItemsPresenter.DragablzItems().Count > 1 &&
+            draggedItem.LogicalIndex < sourceTabablzControl.FixedHeaderCount)
+            return false;
+
+        /*
+       
+
+        var otherTabablzControls = LoadedInstances
+            .Where(
+                tc =>
+                    tc != this && tc.InterTabController != null && InterTabController != null
+                    && Equals(tc.InterTabController.Partition, InterTabController.Partition)
+                    && tc._dragablzItemsControl != null)
+            .Select(tc =>
+            {
+                var topLeft = tc._dragablzItemsControl.PointToScreen(new Point());
+                var lastFixedItem = tc._dragablzItemsControl.DragablzItems()
+                    .OrderBy(di => di.LogicalIndex)
+                    .Take(tc._dragablzItemsControl.FixedItemCount)
+                    .LastOrDefault();
+                //TODO work this for vert tabs
+                if (lastFixedItem != null)
+                    topLeft.Offset(lastFixedItem.X + lastFixedItem.ActualWidth, 0);
+                var bottomRight =
+                    tc._dragablzItemsControl.PointToScreen(new Point(tc._dragablzItemsControl.ActualWidth,
+                        tc._dragablzItemsControl.ActualHeight));
+
+                return new { tc, topLeft, bottomRight };
+            });
+
+        var screenMousePosition = _dragablzItemsControl.PointToScreen(Mouse.GetPosition(_dragablzItemsControl));
+
+        var target = Native.SortWindowsTopToBottom(Application.Current.Windows.OfType<Window>())
+            .Join(otherTabablzControls, w => w, a => Window.GetWindow(a.tc), (w, a) => a)
+            .FirstOrDefault(a => new Rect(a.topLeft, a.bottomRight).Contains(screenMousePosition));
+
+        if (target == null) return false;
+
+        var mousePositionOnItem = Mouse.GetPosition(e.DragablzItem);
+
+        var floatingItemSnapShots = this.VisualTreeDepthFirstTraversal()
+            .OfType<Layout>()
+            .SelectMany(l => l.FloatingDragablzItems().Select(FloatingItemSnapShot.Take))
+            .ToList();
+
+        e.DragablzItem.IsDropTargetFound = true;
+        var item = RemoveItem(e.DragablzItem);
+
+        var interTabTransfer = new InterTabTransfer(item, e.DragablzItem, mousePositionOnItem, floatingItemSnapShots);
+        e.DragablzItem.IsDragging = false;
+
+        target.tc.ReceiveDrag(interTabTransfer);
+       
+        */
+
+        e.Cancel = true;
+        return true;
+    }
+
 
     private bool IsMyItem(DragTabItem item) => ItemsPresenter.DragablzItems().Contains(item);
+
+
+    private bool IsTransposing(TabControl target) => IsVertical(this) != IsVertical(target);
+
+    private static bool IsVertical(TabControl tabControl) => tabControl.TabStripPlacement is Dock.Left or Dock.Right;
 
     #endregion
 }

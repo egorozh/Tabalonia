@@ -17,7 +17,7 @@ public class DragTabItem : TabItem
     private bool _isSiblingDragging;
 
     #endregion
-    
+
     #region Internal Properties
 
     internal Point MouseAtDragStart { get; set; }
@@ -35,7 +35,7 @@ public class DragTabItem : TabItem
     public static readonly DirectProperty<DragTabItem, bool> IsDraggingProperty =
         AvaloniaProperty.RegisterDirect<DragTabItem, bool>(nameof(IsDragging),
             o => o.IsDragging, (o, v) => o.IsDragging = v);
-    
+
     public static readonly DirectProperty<DragTabItem, int> LogicalIndexProperty =
         AvaloniaProperty.RegisterDirect<DragTabItem, int>(nameof(LogicalIndex),
             o => o.LogicalIndex, (o, v) => o.LogicalIndex = v);
@@ -65,7 +65,7 @@ public class DragTabItem : TabItem
         get => _logicalIndex;
         internal set => SetAndRaise(LogicalIndexProperty, ref _logicalIndex, value);
     }
-    
+
     public bool IsDragging
     {
         get => _isDragging;
@@ -101,7 +101,7 @@ public class DragTabItem : TabItem
     #region Events
 
     #endregion
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -122,22 +122,37 @@ public class DragTabItem : TabItem
 
     private void ThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
+        var thumb = sender as Thumb;
+
         var previewEventArgs = new DragablzDragDeltaEventArgs(PreviewDragDelta, this, e);
         RaiseEvent(previewEventArgs);
-        //if (previewEventArgs.Cancel)
-        //    thumb.CancelDrag();
+
+        if (previewEventArgs.Cancel)
+            CancelDrag(thumb, e.Vector);
+
         if (!previewEventArgs.Handled)
         {
             var eventArgs = new DragablzDragDeltaEventArgs(DragDelta, this, e);
             RaiseEvent(eventArgs);
-            //if (eventArgs.Cancel)
-            //    thumb.CancelDrag();
+
+            if (eventArgs.Cancel)
+                CancelDrag(thumb, e.Vector);
         }
+    }
+
+    private void CancelDrag(Thumb? thumb, Vector vector)
+    {
+        VectorEventArgs ev = new ()
+        {
+            RoutedEvent = Thumb.DragCompletedEvent,
+            Vector = vector,
+        };
+
+        thumb?.RaiseEvent(ev);
     }
 
     private void ThumbOnDragCompleted(object? sender, VectorEventArgs e)
     {
-       
         var args = new DragablzDragCompletedEventArgs(DragCompleted, this, e);
         RaiseEvent(args);
         MouseAtDragStart = new Point();

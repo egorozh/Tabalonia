@@ -170,10 +170,7 @@ public class TabsItemsPresenter : ItemsPresenter
 
     #region Internal Methods
 
-    internal IReadOnlyList<DragTabItem> DragablzItems()
-    {
-        return this.ItemContainerGenerator.Containers<DragTabItem>().ToList();
-    }
+    internal IReadOnlyList<DragTabItem> DragablzItems() => ItemContainerGenerator.Containers<DragTabItem>().ToList();
 
     #endregion
 
@@ -244,8 +241,7 @@ public class TabsItemsPresenter : ItemsPresenter
 
         //wowsers
         Dispatcher.UIThread.Post(InvalidateMeasure);
-        //Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
-
+       
         eventArgs.Handled = true;
     }
 

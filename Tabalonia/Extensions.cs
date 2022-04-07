@@ -18,7 +18,7 @@ internal static class Extensions
 
         return element;
     }
-    
+
     public static IEnumerable<TContainer> Containers<TContainer>(this IItemContainerGenerator itemGen)
         where TContainer : class
     {
@@ -39,6 +39,20 @@ internal static class Extensions
 
         if (info is {ContainerControl: TContainer c})
             return c;
+
+        return null;
+    }
+
+    public static object? FindItem<TContainer>(this IItemContainerGenerator itemGen, TContainer? container)
+        where TContainer : class
+    {
+        if (container == null)
+            return null;
+
+        var info = itemGen.Containers.FirstOrDefault(i => i.ContainerControl == container);
+
+        if (info is {Item: { } item})
+            return item;
 
         return null;
     }
@@ -72,6 +86,35 @@ internal static class Extensions
         {
             yield return dependencyObject;
             dependencyObject = dependencyObject.GetLogicalParent();
+        }
+    }
+
+    public static Window? GetWindow(this ILogical dependencyObject)
+        => dependencyObject.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
+
+    public static IEnumerable<object> LogicalTreeDepthFirstTraversal(this ILogical node)
+    {
+        if (node == null)
+            yield break;
+
+        yield return node;
+
+        foreach (var child in node.LogicalChildren.OfType<ILogical>()
+                     .SelectMany(depObj => depObj.LogicalTreeDepthFirstTraversal()))
+            yield return child;
+    }
+
+    public static IEnumerable<object> VisualTreeDepthFirstTraversal(this IVisual node)
+    {
+        if (node == null) yield break;
+        yield return node;
+
+        foreach (var child in node.VisualChildren)
+        {
+            foreach (var d in child.VisualTreeDepthFirstTraversal())
+            {
+                yield return d;
+            }
         }
     }
 }
