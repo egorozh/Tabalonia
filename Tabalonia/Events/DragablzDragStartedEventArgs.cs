@@ -1,27 +1,16 @@
-using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace Tabalonia.Events;
 
-public class DragablzDragStartedEventArgs : DragablzItemEventArgs
+public sealed class DragablzDragStartedEventArgs : DragTabItemEventArgs
 {
-    public DragablzDragStartedEventArgs(DragTabItem dragablzItem, VectorEventArgs dragStartedEventArgs)
-        : base(dragablzItem)
-    {
-        DragStartedEventArgs = dragStartedEventArgs ?? throw new ArgumentNullException(nameof(dragStartedEventArgs));
-    }
+    public CustomThumbEventArgs DragStartedEventArgs { get; }
 
-    public DragablzDragStartedEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem, VectorEventArgs dragStartedEventArgs)
+    public DragablzDragStartedEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem, CustomThumbEventArgs dragStartedEventArgs) 
         : base(routedEvent, dragablzItem)
     {
+        ArgumentNullException.ThrowIfNull(dragStartedEventArgs, nameof(dragStartedEventArgs));
+
         DragStartedEventArgs = dragStartedEventArgs;
     }
-
-    public DragablzDragStartedEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem dragablzItem, VectorEventArgs dragStartedEventArgs)
-        : base(routedEvent, source, dragablzItem)
-    {
-        DragStartedEventArgs = dragStartedEventArgs;
-    }
-
-    public VectorEventArgs DragStartedEventArgs { get; }
 }

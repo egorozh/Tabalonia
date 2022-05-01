@@ -2,20 +2,21 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
 
 [PseudoClasses(":pressed")]
 public class CustomThumb : TemplatedControl
 {
-    public static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
-        RoutedEvent.Register<CustomThumb, VectorEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<CustomThumbEventArgs> DragStartedEvent =
+        RoutedEvent.Register<CustomThumb, CustomThumbEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<VectorEventArgs> DragDeltaEvent =
-        RoutedEvent.Register<CustomThumb, VectorEventArgs>(nameof(DragDelta), RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<CustomThumbEventArgs> DragDeltaEvent =
+        RoutedEvent.Register<CustomThumb, CustomThumbEventArgs>(nameof(DragDelta), RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
-        RoutedEvent.Register<CustomThumb, VectorEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<CustomThumbEventArgs> DragCompletedEvent =
+        RoutedEvent.Register<CustomThumb, CustomThumbEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
 
     private Point? _lastPoint;
 
@@ -26,33 +27,33 @@ public class CustomThumb : TemplatedControl
         DragCompletedEvent.AddClassHandler<CustomThumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
     }
 
-    public event EventHandler<VectorEventArgs> DragStarted
+    public event EventHandler<CustomThumbEventArgs> DragStarted
     {
         add => AddHandler(DragStartedEvent, value);
         remove => RemoveHandler(DragStartedEvent, value);
     }
 
-    public event EventHandler<VectorEventArgs> DragDelta
+    public event EventHandler<CustomThumbEventArgs> DragDelta
     {
         add => AddHandler(DragDeltaEvent, value);
         remove => RemoveHandler(DragDeltaEvent, value);
     }
 
-    public event EventHandler<VectorEventArgs> DragCompleted
+    public event EventHandler<CustomThumbEventArgs> DragCompleted
     {
         add => AddHandler(DragCompletedEvent, value);
         remove => RemoveHandler(DragCompletedEvent, value);
     }
 
-    protected virtual void OnDragStarted(VectorEventArgs e)
+    protected virtual void OnDragStarted(CustomThumbEventArgs e)
     {
     }
 
-    protected virtual void OnDragDelta(VectorEventArgs e)
+    protected virtual void OnDragDelta(CustomThumbEventArgs e)
     {
     }
 
-    protected virtual void OnDragCompleted(VectorEventArgs e)
+    protected virtual void OnDragCompleted(CustomThumbEventArgs e)
     {
     }
 
@@ -60,7 +61,7 @@ public class CustomThumb : TemplatedControl
     {
         if (_lastPoint.HasValue)
         {
-            var ev = new VectorEventArgs
+            var ev = new CustomThumbEventArgs(e)
             {
                 RoutedEvent = DragCompletedEvent,
                 Vector = _lastPoint.Value,
@@ -80,10 +81,10 @@ public class CustomThumb : TemplatedControl
     {
         if (_lastPoint.HasValue)
         {
-            var ev = new VectorEventArgs
+            var ev = new CustomThumbEventArgs(e)
             {
                 RoutedEvent = DragDeltaEvent,
-                Vector = e.GetPosition(this) - _lastPoint.Value,
+                Vector = e.GetPosition(this) - _lastPoint.Value
             };
 
             RaiseEvent(ev);
@@ -95,7 +96,7 @@ public class CustomThumb : TemplatedControl
         e.Handled = true;
         _lastPoint = e.GetPosition(this);
 
-        var ev = new VectorEventArgs
+        var ev = new CustomThumbEventArgs(e)
         {
             RoutedEvent = DragStartedEvent,
             Vector = (Vector)_lastPoint,
@@ -113,10 +114,10 @@ public class CustomThumb : TemplatedControl
             e.Handled = true;
             _lastPoint = null;
 
-            var ev = new VectorEventArgs
+            var ev = new CustomThumbEventArgs(e)
             {
                 RoutedEvent = DragCompletedEvent,
-                Vector = (Vector)e.GetPosition(this),
+                Vector = e.GetPosition(this),
             };
 
             RaiseEvent(ev);

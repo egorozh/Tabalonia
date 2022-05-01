@@ -1,17 +1,18 @@
-using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace Tabalonia.Events;
 
-public class DragablzDragDeltaEventArgs : DragablzItemEventArgs
+public sealed class DragablzDragDeltaEventArgs : DragTabItemEventArgs
 {
-    public DragablzDragDeltaEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem, VectorEventArgs dragDeltaEventArgs) 
+    public CustomThumbEventArgs DragDeltaEventArgs { get; }
+
+    public bool Cancel { get; set; }
+
+    public DragablzDragDeltaEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem, CustomThumbEventArgs dragDeltaEventArgs)       
         : base(routedEvent, dragablzItem)
     {
-        DragDeltaEventArgs = dragDeltaEventArgs ?? throw new ArgumentNullException(nameof(dragDeltaEventArgs));
+        ArgumentNullException.ThrowIfNull(dragDeltaEventArgs, nameof(dragDeltaEventArgs));
+
+        DragDeltaEventArgs = dragDeltaEventArgs;
     }
-
-    public VectorEventArgs DragDeltaEventArgs { get; }
-
-    public bool Cancel { get; set; }        
 }

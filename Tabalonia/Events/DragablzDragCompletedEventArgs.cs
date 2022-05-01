@@ -1,31 +1,11 @@
-﻿using Avalonia.Input;
-using Avalonia.Interactivity;
+﻿using Avalonia.Interactivity;
 
 namespace Tabalonia.Events;
 
-public class DragablzDragCompletedEventArgs : RoutedEventArgs
+public sealed class DragablzDragCompletedEventArgs : DragTabItemEventArgs
 {
-    public DragablzDragCompletedEventArgs(DragTabItem dragablzItem, VectorEventArgs dragCompletedEventArgs)
+    public DragablzDragCompletedEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem)
+        : base(routedEvent, dragablzItem)
     {
-        DragablzItem = dragablzItem ?? throw new ArgumentNullException(nameof(dragablzItem));
-        DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
     }
-
-    public DragablzDragCompletedEventArgs(RoutedEvent routedEvent, DragTabItem dragablzItem, VectorEventArgs dragCompletedEventArgs)
-        : base(routedEvent)
-    {
-        DragablzItem = dragablzItem ?? throw new ArgumentNullException(nameof(dragablzItem));            
-        DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
-    }
-
-    public DragablzDragCompletedEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem dragablzItem, VectorEventArgs dragCompletedEventArgs)
-        : base(routedEvent, source)
-    {
-        DragablzItem = dragablzItem ?? throw new ArgumentNullException(nameof(dragablzItem));
-        DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
-    }
-
-    public DragTabItem DragablzItem { get; }
-
-    public VectorEventArgs DragCompletedEventArgs { get; }
 }

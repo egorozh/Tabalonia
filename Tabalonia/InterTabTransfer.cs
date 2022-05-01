@@ -4,7 +4,7 @@ namespace Tabalonia;
 
 internal class InterTabTransfer
 {
-    public InterTabTransfer(object item, DragTabItem originatorContainer, Orientation breachOrientation, Point dragStartWindowOffset, Point dragStartItemOffset, Point? itemPositionWithinHeader, Rect itemSize, 
+    public InterTabTransfer(object item, DragTabItem originatorContainer, Orientation breachOrientation, Point dragStartWindowOffset, Point dragStartItemOffset, Point itemPositionWithinHeader, Rect itemSize, 
          bool isTransposing)
     {
         TransferReason = InterTabTransferReason.Breach;
@@ -40,7 +40,7 @@ internal class InterTabTransfer
 
     public Point DragStartItemOffset { get; }
 
-    public Point? ItemPositionWithinHeader { get; }
+    public Point ItemPositionWithinHeader { get; }
 
     public Rect ItemSize { get; }
     

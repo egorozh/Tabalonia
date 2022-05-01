@@ -1,5 +1,7 @@
 using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Tabalonia.Events;
 using Tabalonia.Organisers;
@@ -11,9 +13,11 @@ public class TabsItemsPresenter : ItemsPresenter
     #region Private Fields
 
     private IControl? _prevAddButton;
+    private DragTabItem? _instigateDragItem;
+    private object? _instigateItem;
 
     #endregion
-    
+
     #region Avalonia Properties
 
     public static readonly StyledProperty<double> AdjacentHeaderItemOffsetProperty =
@@ -52,6 +56,8 @@ public class TabsItemsPresenter : ItemsPresenter
     #region Internal Properties
 
     internal IControl? AddButton { get; set; }
+
+    internal Size? LockedMeasure { get; set; }
 
     #endregion
 
@@ -134,15 +140,23 @@ public class TabsItemsPresenter : ItemsPresenter
 
     #region Protected Methods
 
+    protected override void PanelCreated(IPanel panel)
+    {
+        base.PanelCreated(panel);
+
+        //if (panel is Canvas canvas)
+    }
+
+
     protected override Size MeasureOverride(Size availableSize)
     {
-        //if (LockedMeasure.HasValue)
-        //{
-        //    ItemsPresenterWidth = LockedMeasure.Value.Width;
-        //    ItemsPresenterHeight = LockedMeasure.Value.Height;
-        //    return LockedMeasure.Value;
-        //}
-
+        if (LockedMeasure.HasValue)
+        {
+            //ItemsPresenterWidth = LockedMeasure.Value.Width;
+            //ItemsPresenterHeight = LockedMeasure.Value.Height;
+            return LockedMeasure.Value;
+        }
+        
         var dragablzItems = DragablzItems();
         var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -164,17 +178,37 @@ public class TabsItemsPresenter : ItemsPresenter
         return new Size(width, height);
     }
 
+    //public override void Render(DrawingContext context)
+    //{
+    //    base.Render(context);
+
+    //    if (_instigateDragItem != null)
+    //    {
+    //        _instigateDragItem?.InstigateDrag();
+    //        _instigateDragItem = null;
+    //    }
+    //}
+
     #endregion
 
     #region Internal Methods
 
     internal IReadOnlyList<DragTabItem> DragablzItems() => ItemContainerGenerator.Containers<DragTabItem>().ToList();
 
-    internal void InstigateDrag(object item, Action<DragTabItem> continuation)
+    internal void InstigateDrag(object item, PointerEventArgs pointerEventArgs, Action<DragTabItem> continuation)
     {
-        var dragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(item);
+        _instigateItem = item;
 
-        dragablzItem?.InstigateDrag(continuation);
+        _instigateDragItem = ItemContainerGenerator.FindContainer<DragTabItem>(item);
+
+        var sdsd = this;
+
+        _instigateDragItem?.InstigateDragPrepare(continuation, pointerEventArgs);
+
+        //await Task.Delay(1000);
+        _instigateDragItem?.InstigateDrag();
+
+        //Dispatcher.UIThread.Post(() => { _instigateDragItem?.InstigateDrag(); }, DispatcherPriority.Layout);
     }
 
     #endregion
@@ -185,7 +219,7 @@ public class TabsItemsPresenter : ItemsPresenter
     {
         DragTabItem currentItem = eventArgs.DragablzItem;
 
-        var siblingItems = DragablzItems().Except(new[] {currentItem}).ToList();
+        var siblingItems = DragablzItems().Except(currentItem).ToList();
         ItemsOrganiser.OrganiseOnDragStarted(siblingItems, currentItem);
 
         eventArgs.Handled = true;
@@ -246,7 +280,7 @@ public class TabsItemsPresenter : ItemsPresenter
 
         //wowsers
         Dispatcher.UIThread.Post(InvalidateMeasure);
-       
+
         eventArgs.Handled = true;
     }
 
