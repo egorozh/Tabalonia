@@ -1,6 +1,4 @@
-using Avalonia.Controls;
-using Avalonia.Threading;
-using Tabalonia.Controls;
+using System.Collections;
 
 namespace Tabalonia;
 
@@ -21,8 +19,8 @@ public class DefaultInterTabClient : IInterTabClient
 
         if (newTabablzControl == null) throw new ApplicationException("Unable to ascertain tab control.");
 
-        //if (newTabablzControl.ItemsSource == null)
-        //    newTabablzControl.Items.Clear();
+        if (newTabablzControl.Items is IList items)
+            items.Clear();
 
         return new NewTabHost<Window>(newWindow, newTabablzControl);    
     }

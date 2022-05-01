@@ -1,6 +1,4 @@
-﻿using Avalonia;
-
-namespace Tabalonia;
+﻿namespace Tabalonia;
 
 public class InterTabController : AvaloniaObject
 {

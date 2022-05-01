@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using Tabalonia.Controls;
-
-namespace Tabalonia;
+﻿namespace Tabalonia;
 
 public interface INewTabHost<out TElement> where TElement : IAvaloniaObject
 {

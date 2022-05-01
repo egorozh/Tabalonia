@@ -1,5 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -171,6 +169,13 @@ public class TabsItemsPresenter : ItemsPresenter
     #region Internal Methods
 
     internal IReadOnlyList<DragTabItem> DragablzItems() => ItemContainerGenerator.Containers<DragTabItem>().ToList();
+
+    internal void InstigateDrag(object item, Action<DragTabItem> continuation)
+    {
+        var dragablzItem = ItemContainerGenerator.FindContainer<DragTabItem>(item);
+
+        dragablzItem?.InstigateDrag(continuation);
+    }
 
     #endregion
 

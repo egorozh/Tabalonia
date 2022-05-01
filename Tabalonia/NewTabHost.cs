@@ -1,17 +1,18 @@
-﻿using Avalonia;
-using Tabalonia.Controls;
-
-namespace Tabalonia;
+﻿namespace Tabalonia;
 
 public class NewTabHost<TElement> : INewTabHost<TElement> where TElement : IAvaloniaObject
 {
-    public NewTabHost(TElement container, TabsControl tabablzControl)
-    {
-        Container = container ?? throw new ArgumentNullException(nameof(container));
-        TabablzControl = tabablzControl ?? throw new ArgumentNullException(nameof(tabablzControl));
-    }
-
     public TElement Container { get; }
 
     public TabsControl TabablzControl { get; }
+
+
+    public NewTabHost(TElement container, TabsControl tabablzControl)
+    {
+        ArgumentNullException.ThrowIfNull(container, nameof(container));
+        ArgumentNullException.ThrowIfNull(tabablzControl, nameof(tabablzControl));
+
+        Container = container;
+        TabablzControl = tabablzControl;
+    }
 }

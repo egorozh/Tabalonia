@@ -1,8 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
@@ -11,10 +11,14 @@ public class DragTabItem : TabItem
 {
     #region Private Fields
 
-    private Thumb _thumb;
+    private CustomThumb? _thumb;
     private int _logicalIndex;
     private bool _isDragging;
     private bool _isSiblingDragging;
+    private int _prevZindex;
+    private bool _seizeDragWithTemplate;
+    private Action<DragTabItem>? _dragSeizedContinuation;
+    private bool _isTemplateThumbWithMouseAfterSeize;
 
     #endregion
 
@@ -92,9 +96,9 @@ public class DragTabItem : TabItem
         RoutedEvent.Register<DragTabItem, DragablzDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
 
     public static readonly RoutedEvent<DragablzDragDeltaEventArgs> PreviewDragDelta =
-        RoutedEvent.Register<DragTabItem, DragablzDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel);
+        RoutedEvent.Register<DragTabItem, DragablzDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
-    private int _prevZindex;
+    private PointerEventArgs _e;
 
     #endregion
 
@@ -102,18 +106,36 @@ public class DragTabItem : TabItem
 
     #endregion
 
+    
+    internal void InstigateDrag(Action<DragTabItem> continuation)
+    {
+        var cursor = this.Cursor?.PlatformImpl;
+        //Mouse.AddLostMouseCaptureHandler(this, LostMouseAfterSeizeHandler);
+        continuation?.Invoke(this);
+
+        RoutedEventArgs args = new PointerPressedEventArgs(_thumb, null, _thumb, new Point(), 0, PointerPointProperties.None, KeyModifiers.None);
+
+        Dispatcher.UIThread.Post(() => _thumb.RaiseEvent(args));
+
+        //Dispatcher.BeginInvoke(new Action(() => thumbAndSubscription.Item1.RaiseEvent(new MouseButtonEventArgs(InputManager.Current.PrimaryMouseDevice,
+        //        0,
+        //        MouseButton.Left)
+        //    { RoutedEvent = MouseLeftButtonDownEvent })));
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
 
-        var templateThumb = e.Find<Thumb>("PART_Thumb");
+        var templateThumb = e.Find<CustomThumb>("PART_Thumb");
 
         _thumb = templateThumb;
         _thumb.DragStarted += ThumbOnDragStarted;
         _thumb.DragDelta += ThumbOnDragDelta;
         _thumb.DragCompleted += ThumbOnDragCompleted;
-    }
 
+    }
+    
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
         MouseAtDragStart = new MouseDevice().GetPosition(this);
@@ -122,7 +144,7 @@ public class DragTabItem : TabItem
 
     private void ThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
-        var thumb = sender as Thumb;
+        var thumb = sender as CustomThumb;
 
         var previewEventArgs = new DragablzDragDeltaEventArgs(PreviewDragDelta, this, e);
         RaiseEvent(previewEventArgs);
@@ -140,11 +162,11 @@ public class DragTabItem : TabItem
         }
     }
 
-    private void CancelDrag(Thumb? thumb, Vector vector)
+    private void CancelDrag(CustomThumb? thumb, Vector vector)
     {
         VectorEventArgs ev = new ()
         {
-            RoutedEvent = Thumb.DragCompletedEvent,
+            RoutedEvent = CustomThumb.DragCompletedEvent,
             Vector = vector,
         };
 
@@ -166,6 +188,8 @@ public class DragTabItem : TabItem
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
+
+        _e = e;
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)

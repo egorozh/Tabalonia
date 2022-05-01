@@ -1,6 +1,3 @@
-using Avalonia.Controls;
-using Tabalonia.Controls;
-
 namespace Tabalonia;
 
 /// <summary>
@@ -14,14 +11,10 @@ public interface IInterTabClient
     /// <param name="interTabClient"></param>
     /// <param name="partition">Provides the partition where the drag operation was initiated.</param>
     /// <param name="source">The source control where a dragging operation was initiated.</param>
-    /// <returns></returns>
     INewTabHost<Window> GetNewHost(IInterTabClient interTabClient, object partition, TabsControl source);
 
     /// <summary>
     /// Called when a tab has been emptied, and thus typically a window needs closing.
     /// </summary>
-    /// <param name="tabControl"></param>
-    /// <param name="window"></param>
-    /// <returns></returns>
     TabEmptiedResponse TabEmptiedHandler(TabsControl tabControl, Window window);
 }

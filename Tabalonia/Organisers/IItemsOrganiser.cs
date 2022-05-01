@@ -1,8 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Tabalonia.Controls;
-
-namespace Tabalonia.Organisers;
+﻿namespace Tabalonia.Organisers;
 
 public interface IItemsOrganiser
 {
@@ -14,8 +10,7 @@ public interface IItemsOrganiser
 
     IEnumerable<DragTabItem> Sort(IEnumerable<DragTabItem> items);
 
-    Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation,
-        DragTabItem dragTabItem, IControl? addButton);
+    Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation, DragTabItem dragTabItem, IControl? addButton);
 
     void Organise(Size maxConstraint, IEnumerable<DragTabItem> dragablzItems, IControl? addButton);
 

@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -116,5 +115,10 @@ internal static class Extensions
                 yield return d;
             }
         }
+    }
+
+    public static IEnumerable<TObject> Except<TObject>(this IEnumerable<TObject> first, params TObject[] second)
+    {
+        return first.Except((IEnumerable<TObject>)second);
     }
 }

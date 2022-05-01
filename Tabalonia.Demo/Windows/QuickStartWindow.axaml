@@ -11,8 +11,7 @@
         Title="Quick Start Window" 
         Height="720" Width="1024"
         WindowStartupLocation="CenterScreen">
-
-	<docking:Layout >
+	
         <controls:TabsControl Name="TabsControl">
 			<controls:TabsControl.InterTabController>
 				<tabalonia:InterTabController  />
@@ -53,6 +52,5 @@
                 </Grid>
             </TabItem>
         </controls:TabsControl>
-	</docking:Layout>
-
+	
 </Window>

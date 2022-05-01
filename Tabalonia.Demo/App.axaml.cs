@@ -19,7 +19,7 @@ public class App : Application
             desktop.MainWindow = new QuickStartWindow();
         }
 
-        new BasicExampleMainWindow().Show();
+        //new BasicExampleMainWindow().Show();
 
         base.OnFrameworkInitializationCompleted();
     }

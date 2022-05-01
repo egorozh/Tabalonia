@@ -1,6 +1,5 @@
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Tabalonia.Controls;
 
 namespace Tabalonia.Events;
 

@@ -1,5 +1,3 @@
-using Tabalonia.Controls;
-
 namespace Tabalonia;
 
 public enum TabEmptiedResponse
