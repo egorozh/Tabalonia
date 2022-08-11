@@ -1,5 +1,8 @@
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -15,6 +18,8 @@ public class TabsItemsPresenter : ItemsPresenter
     private IControl? _prevAddButton;
     private DragTabItem? _instigateDragItem;
     private object? _instigateItem;
+    private Thumb? _dragThumb;
+    private readonly IDisposable _boundSubscription;
 
     #endregion
 
@@ -73,6 +78,8 @@ public class TabsItemsPresenter : ItemsPresenter
         AddHandler(DragTabItem.DragCompleted, ItemDragCompleted);
 
         SetValue(ItemsOrganiserProperty, new HorizontalOrganiser(GetValue(AdjacentHeaderItemOffsetProperty)));
+
+        _boundSubscription = BoundsProperty.Changed.Subscribe(OnBoundsChanged);
     }
 
     static TabsItemsPresenter()
@@ -133,7 +140,7 @@ public class TabsItemsPresenter : ItemsPresenter
         var orderedEnumerable = sortedItems.OrderBy(di => sortedItems.IndexOf(di));
 
         var maxConstraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
-        ItemsOrganiser.Organise(maxConstraint, orderedEnumerable, AddButton);
+        ItemsOrganiser.Organise(maxConstraint, orderedEnumerable, AddButton, _dragThumb);
     }
 
     #endregion
@@ -169,14 +176,28 @@ public class TabsItemsPresenter : ItemsPresenter
         if (AddButton != null)
             this.Panel.Children.Add(_prevAddButton);
 
-        ItemsOrganiser.Organise(maxConstraint, dragablzItems, AddButton);
-        var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems, AddButton);
+
+        if (_dragThumb == null)
+        {
+            _dragThumb = new Thumb();
+
+            _dragThumb.Classes.Add("DragTabItemThumbStyle");
+
+            this.Panel.Children.Add(_dragThumb);
+
+            _dragThumb.DragDelta += DragThumbOnDragDelta;
+            _dragThumb.DoubleTapped += DragThumbOnDoubleTapped;
+        }
+
+        ItemsOrganiser.Organise(maxConstraint, dragablzItems, AddButton, _dragThumb);
+        var measure = ItemsOrganiser.Measure(this, this.Bounds, dragablzItems, AddButton, _dragThumb);
 
         var width = !double.IsInfinity(measure.Width) ? measure.Width : availableSize.Width;
         var height = !double.IsInfinity(measure.Height) ? measure.Height : availableSize.Height;
 
         return new Size(width, height);
     }
+    
 
     //public override void Render(DrawingContext context)
     //{
@@ -242,7 +263,8 @@ public class TabsItemsPresenter : ItemsPresenter
             return;
         }
 
-        desiredLocation = ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation, currentItem, AddButton);
+        desiredLocation =
+            ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation, currentItem, AddButton, _dragThumb);
 
         var siblingsItems = DragablzItems().Except(new[] {currentItem}).ToList();
 
@@ -254,7 +276,7 @@ public class TabsItemsPresenter : ItemsPresenter
         currentItem.X = desiredLocation.X;
         currentItem.Y = desiredLocation.Y;
 
-        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, AddButton);
+        ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, AddButton, _dragThumb);
 
         currentItem.BringIntoView();
 
@@ -284,5 +306,33 @@ public class TabsItemsPresenter : ItemsPresenter
         eventArgs.Handled = true;
     }
 
+    private void OnBoundsChanged(AvaloniaPropertyChangedEventArgs<Rect> args)
+    {
+        if (args.Sender == this)
+        {
+            InvalidateMeasure();
+        }
+    }
+
+    private void DragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
+    {
+        var window = this.LogicalTreeAncestory().OfType<IDraggedAndRestoredWindow>().FirstOrDefault();
+
+        if (window is not null)
+        {
+            window.DoubleTapped();
+        }
+    }
+    
+    private void DragThumbOnDragDelta(object? sender, VectorEventArgs e)
+    {
+        var window = this.LogicalTreeAncestory().OfType<IDraggedAndRestoredWindow>().FirstOrDefault();
+
+        if (window is not null)
+        {
+            window.Dragged(e.Vector.X, e.Vector.Y);
+        }
+    }
+    
     #endregion
 }

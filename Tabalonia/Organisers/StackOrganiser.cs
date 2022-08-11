@@ -12,7 +12,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     private readonly Orientation _orientation;
     private readonly double _itemOffset;
-    private readonly Func<IControl, double> _getDesiredSize;
+    private readonly Func<IControl, (double firstDim, double secondDim)> _getDesiredSize;
     private readonly Func<DragTabItem, double> _getLocation;
     private readonly Action<DragTabItem, double> _setLocation;
     private readonly AvaloniaProperty _canvasProperty;
@@ -34,13 +34,13 @@ public abstract class StackOrganiser : IItemsOrganiser
 
         if (orientation == Orientation.Horizontal)
         {
-            _getDesiredSize = item => item.DesiredSize.Width;
+            _getDesiredSize = item => (item.DesiredSize.Width, item.DesiredSize.Height);
             _getLocation = item => item.X;
             _setLocation = (item, coord) => { item.SetValue(DragTabItem.XProperty, coord); };
         }
         else
         {
-            _getDesiredSize = item => item.DesiredSize.Height;
+            _getDesiredSize = item => (item.DesiredSize.Height, item.DesiredSize.Width);
             _getLocation = item => item.Y;
             _setLocation = (item, coord) => { item.SetValue(DragTabItem.YProperty, coord); };
         }
@@ -50,7 +50,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     #region Public Methods
 
-    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton)
+    public void Organise(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton, IControl? dragThumb)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -62,14 +62,15 @@ public abstract class StackOrganiser : IItemsOrganiser
                     .ThenAscending(tuple => tuple.Item1))
             .Select(tuple => tuple.Item2);
 
-        OrganiseInternal(measureBounds, sortedItems, addButton);
+        OrganiseInternal(measureBounds, sortedItems, addButton, dragThumb);
     }
 
-    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items, IControl? addButton)
+    public void Organise(Size measureBounds, IOrderedEnumerable<DragTabItem> items, IControl? addButton,
+        IControl? dragThumb)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
-        OrganiseInternal(measureBounds, items, addButton);
+        OrganiseInternal(measureBounds, items, addButton, dragThumb);
     }
 
     public void OrganiseOnDragStarted(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem)
@@ -81,7 +82,8 @@ public abstract class StackOrganiser : IItemsOrganiser
         _siblingItemLocationOnDragStart = siblingItems.Select(GetLocationInfo).ToDictionary(loc => loc.Item);
     }
 
-    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, IControl? addButton)
+    public void OrganiseOnDrag(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem, IControl? addButton,
+        IControl? dragThumb)
     {
         if (siblingItems == null) throw new ArgumentNullException(nameof(siblingItems));
         if (dragItem == null) throw new ArgumentNullException(nameof(dragItem));
@@ -101,10 +103,10 @@ public abstract class StackOrganiser : IItemsOrganiser
                 item.ZIndex = --zIndex;
             }
 
-            currentCoord += _getDesiredSize(item) + _itemOffset;
+            currentCoord += _getDesiredSize(item).firstDim + _itemOffset;
         }
 
-        var dragItemMaxCoord = _getLocation(dragItem) + _getDesiredSize(dragItem);
+        var dragItemMaxCoord = _getLocation(dragItem) + _getDesiredSize(dragItem).firstDim;
         var defaultCoord = currentCoord - _itemOffset;
 
         addButton?.SetValue(_canvasProperty, dragItemMaxCoord > defaultCoord ? dragItemMaxCoord : defaultCoord);
@@ -127,7 +129,7 @@ public abstract class StackOrganiser : IItemsOrganiser
             var item = location.Item;
 
             _setLocation(item, currentCoord);
-            currentCoord += _getDesiredSize(item) + _itemOffset;
+            currentCoord += _getDesiredSize(item).firstDim + _itemOffset;
             item.ZIndex = --z;
             item.LogicalIndex = logicalIndex++;
         }
@@ -136,7 +138,7 @@ public abstract class StackOrganiser : IItemsOrganiser
     }
 
     public Point ConstrainLocation(TabsItemsPresenter requestor, Rect measureBounds, Point itemDesiredLocation,
-        DragTabItem dragTabItem, IControl? addButton)
+        DragTabItem dragTabItem, IControl? addButton, IControl? dragThumb)
     {
         var fixedItems = requestor.FixedItemCount;
         var lowerBound = fixedItems == 0
@@ -148,18 +150,20 @@ public abstract class StackOrganiser : IItemsOrganiser
         var itemLocation = _orientation == Orientation.Horizontal ? itemDesiredLocation.X : itemDesiredLocation.Y;
         var boundsValue = _orientation == Orientation.Horizontal ? measureBounds.Width : measureBounds.Height;
 
-        var addButtonSize = addButton == null ? 0 : _getDesiredSize(addButton);
+        var addButtonSize = addButton == null ? 0 : _getDesiredSize(addButton).firstDim;
 
         var x = Math.Min(Math.Max(lowerBound, itemLocation),
-            boundsValue - _getDesiredSize(dragTabItem) - addButtonSize);
+            boundsValue - _getDesiredSize(dragTabItem).firstDim - addButtonSize);
 
         const int y = 0;
 
         return _orientation == Orientation.Horizontal ? new Point(x, y) : new Point(y, x);
     }
 
-    public Size Measure(TabsItemsPresenter requestor, Rect availableSize, IEnumerable<DragTabItem> items,
-        IControl? addButton)
+    public Size Measure(TabsItemsPresenter requestor,
+        Rect availableSize,
+        IEnumerable<DragTabItem> items,
+        IControl? addButton, IControl? dragThumb)
     {
         if (items == null) throw new ArgumentNullException(nameof(items));
 
@@ -194,6 +198,29 @@ public abstract class StackOrganiser : IItemsOrganiser
             isFirst = false;
         }
 
+        if (addButton is not null)
+        {
+            addButton.Measure(size);
+
+            var loaded = addButton.IsArrangeValid;
+
+            height = Math.Max(height,
+                !loaded ? addButton.DesiredSize.Height : addButton.Bounds.Height);
+            width += !loaded ? addButton.DesiredSize.Width : addButton.Bounds.Width;
+        }
+
+        if (dragThumb is not null)
+        {
+            dragThumb.Measure(size);
+
+            var dragThumbWidth = availableSize.Width - width;
+            
+            dragThumb.SetValue(Layoutable.WidthProperty, dragThumbWidth);
+            dragThumb.SetValue(Layoutable.HeightProperty, height);
+
+            width += dragThumbWidth;
+        }
+
         return new Size(Math.Max(width, 0), Math.Max(height, 0));
     }
 
@@ -208,24 +235,52 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     #region Private Methods
 
-    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton)
+    private void OrganiseInternal(Size measureBounds, IEnumerable<DragTabItem> items, IControl? addButton,
+        IControl? dragThumb)
     {
-        var currentCoord = 0.0;
-        var z = int.MaxValue;
-        var logicalIndex = 0;
+        double currentCoord = 0.0;
+        int z = int.MaxValue;
+        int logicalIndex = 0;
+
+        double height = 1;
+
         foreach (var newItem in items)
         {
             newItem.ZIndex = newItem.IsSelected ? int.MaxValue : --z;
             _setLocation(newItem, currentCoord);
             newItem.LogicalIndex = logicalIndex++;
             newItem.Measure(measureBounds);
-            var desiredSize = _getDesiredSize(newItem);
+
+            double desiredSize = _getDesiredSize(newItem).firstDim;
+
             if (desiredSize == 0.0)
                 desiredSize = 1.0; //no measure? create something to help sorting
+
+            double newHeight = _getDesiredSize(newItem).secondDim;
+
+            if (newHeight > height)
+                height = newHeight;
+
             currentCoord += desiredSize + _itemOffset;
         }
 
-        addButton?.SetValue(_canvasProperty, currentCoord - _itemOffset);
+        if (addButton is not null)
+        {
+            addButton.SetValue(_canvasProperty, currentCoord - _itemOffset);
+            addButton.Measure(measureBounds);
+
+            var size = _getDesiredSize(addButton).firstDim;
+            currentCoord += size - _itemOffset;
+        }
+
+        if (dragThumb is not null)
+        {
+            dragThumb.SetValue(_canvasProperty, currentCoord);
+            dragThumb.Measure(measureBounds);
+
+            dragThumb.SetValue(Layoutable.WidthProperty, 11111111111);
+            dragThumb.SetValue(Layoutable.HeightProperty, height);
+        }
     }
 
     private IEnumerable<LocationInfo> GetLocations(IEnumerable<DragTabItem> siblingItems, DragTabItem dragItem)
@@ -287,7 +342,7 @@ public abstract class StackOrganiser : IItemsOrganiser
 
     private LocationInfo GetLocationInfo(DragTabItem item)
     {
-        var size = _getDesiredSize(item);
+        var size = _getDesiredSize(item).firstDim;
         if (!_activeStoryboardTargetLocations.TryGetValue(item, out var startLocation))
             startLocation = _getLocation(item);
         var midLocation = startLocation + size / 2;
