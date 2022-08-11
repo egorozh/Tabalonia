@@ -40,7 +40,7 @@ public class TabsControl : TabControl
 
     public static readonly StyledProperty<Template?> AddButtonTemplateProperty =
         AvaloniaProperty.Register<TabsControl, Template?>(nameof(AddButtonTemplate));
-
+    
     #endregion
 
     #region Public Properties
@@ -103,7 +103,6 @@ public class TabsControl : TabControl
     }
 
     #endregion
-
 
     #region Public Methods
 
