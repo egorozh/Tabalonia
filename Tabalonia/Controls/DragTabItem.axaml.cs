@@ -116,7 +116,7 @@ public class DragTabItem : TabItem
 
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
-        MouseAtDragStart = new MouseDevice().GetPosition(this);
+        //MouseAtDragStart = new MouseDevice().GetPosition(this);
         RaiseEvent(new DragablzDragStartedEventArgs(DragStarted, this, args));
     }
 
@@ -158,17 +158,17 @@ public class DragTabItem : TabItem
         base.OnPointerReleased(e);
     }
 
-    protected override void OnPointerEnter(PointerEventArgs e)
+    protected override void OnPointerEntered(PointerEventArgs e)
     {
-        base.OnPointerEnter(e);
+        base.OnPointerEntered(e);
 
         _prevZindex = ZIndex;
         ZIndex = int.MaxValue;
     }
 
-    protected override void OnPointerLeave(PointerEventArgs e)
+    protected override void OnPointerExited(PointerEventArgs e)
     {
-        base.OnPointerLeave(e);
+        base.OnPointerExited(e);
 
         ZIndex = _prevZindex;
     }
