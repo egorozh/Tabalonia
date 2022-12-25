@@ -8,11 +8,11 @@
 		<AvaloniaResource Include="Assets\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="11.0.0-preview1" />
-		<PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview1" />
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview1" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview1" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview1" />
+		<PackageReference Include="Avalonia" Version="11.0.0-preview4" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview4" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview4" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview4" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview4" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
 	</ItemGroup>
 

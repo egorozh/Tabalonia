@@ -5,7 +5,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Tabalonia.Events;
 using Tabalonia.Organisers;
