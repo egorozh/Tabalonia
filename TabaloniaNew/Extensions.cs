@@ -1,0 +1,104 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Generators;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+using TabaloniaNew.Exceptions;
+
+
+namespace TabaloniaNew;
+
+
+internal static class Extensions
+{
+    public static T Find<T>(this TemplateAppliedEventArgs e, string elementName) where T : class
+    {
+        var element = e.NameScope.Find<T>(elementName);
+
+        if (element == null)
+            throw new ElementNotFoundOnStyleException(elementName);
+
+        return element;
+    }
+
+    public static IEnumerable<TContainer> Containers<TContainer>(this IItemContainerGenerator itemGen)
+        where TContainer : class
+    {
+        foreach (ItemContainerInfo? info in itemGen.Containers)
+        {
+            if (info.ContainerControl is TContainer c)
+                yield return c;
+        }
+    }
+
+    public static TContainer? FindContainer<TContainer>(this IItemContainerGenerator itemGen, object? item)
+        where TContainer : class
+    {
+        if (item == null)
+            return null;
+
+        var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
+
+        if (info is {ContainerControl: TContainer c})
+            return c;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Yields the visual ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<IVisual> VisualTreeAncestory(this IVisual dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetVisualParent();
+        }
+    }
+
+    /// <summary>
+    /// Yields the logical ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<ILogical> LogicalTreeAncestory(this ILogical dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetLogicalParent();
+        }
+    }
+
+
+    public static void RestoreWindow(this Window? window)
+    {
+        if (window is null)
+            return;
+
+        window.WindowState = window.WindowState != WindowState.Maximized
+            ? WindowState.Maximized
+            : WindowState.Normal;
+    }
+
+
+    public static void DragWindow(this Window? window, double vectorX, double vectorY)
+    {
+        if (window is null)
+            return;
+
+        var pos = window.Position;
+        
+        window.Position = new PixelPoint(
+            x: (int) (pos.X + vectorX),
+            y: (int) (pos.Y + vectorY));
+    }
+}

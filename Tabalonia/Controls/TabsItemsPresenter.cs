@@ -282,20 +282,14 @@ public class TabsItemsPresenter : ItemsPresenter
     {
         var window = this.LogicalTreeAncestory().OfType<IDraggedAndRestoredWindow>().FirstOrDefault();
 
-        if (window is not null)
-        {
-            window.DoubleTapped();
-        }
+        window?.DoubleTapped();
     }
     
     private void DragThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
         var window = this.LogicalTreeAncestory().OfType<IDraggedAndRestoredWindow>().FirstOrDefault();
 
-        if (window is not null)
-        {
-            window.Dragged(e.Vector.X, e.Vector.Y);
-        }
+        window?.Dragged(e.Vector.X, e.Vector.Y);
     }
     
     #endregion

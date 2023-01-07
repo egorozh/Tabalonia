@@ -4,8 +4,14 @@
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                 <ResourceInclude Source="avares://TabaloniaNew/Controls/TabsControl.axaml" />
+                
+                <ResourceInclude Source="avares://TabaloniaNew/Controls/TabsControl.axaml" />
+              
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
+    
+    <StyleInclude Source="avares://TabaloniaNew/Themes/Controls/Buttons.axaml" />
+    <StyleInclude Source="avares://TabaloniaNew/Controls/DragTabItem.axaml" />
+
 </Styles>
