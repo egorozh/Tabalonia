@@ -52,6 +52,7 @@
                     <Grid RowDefinitions="Auto *">
 
                         <panels:TopPanel Grid.Row="0"
+                                         Name="PART_TopPanel"
                                          HorizontalAlignment="Stretch">
                             <ItemsPresenter Name="PART_ItemsPresenter"
                                             Items="{TemplateBinding Items}"
