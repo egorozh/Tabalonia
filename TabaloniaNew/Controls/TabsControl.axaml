@@ -54,6 +54,12 @@
                         <panels:TopPanel Grid.Row="0"
                                          Name="PART_TopPanel"
                                          HorizontalAlignment="Stretch">
+                            
+                            <Thumb Name="PART_LeftDragWindowThumb"
+                                   Background="#3300ff00"
+                                   MinWidth="80"
+                                   Theme="{StaticResource WindowThumbStyle}"/>
+                            
                             <ItemsPresenter Name="PART_ItemsPresenter"
                                             Items="{TemplateBinding Items}"
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -61,8 +67,8 @@
 
                             <Button Content="+" />
 
-                            <Thumb Name="PART_DragWindowThumb"
-                                   Background="Green"
+                            <Thumb Name="PART_RightDragWindowThumb"
+                                   Background="#3300ff00"
                                    MinWidth="50"
                                    Theme="{StaticResource WindowThumbStyle}"/>
 

@@ -15,9 +15,10 @@ namespace TabaloniaNew.Controls
     {
         #region Private Fields
 
-        private Thumb _dragWindowThumb;
+        private Thumb _rightDragWindowThumb;
         private TabsPanel _tabsPanel;
         private TopPanel _topPanel;
+        private Thumb _leftDragWindowThumb;
 
         #endregion
        
@@ -54,9 +55,13 @@ namespace TabaloniaNew.Controls
         {
             base.OnApplyTemplate(e);
 
-            _dragWindowThumb = e.NameScope.Get<Thumb>("PART_DragWindowThumb");
-            _dragWindowThumb.DragDelta += DragThumbOnDragDelta;
-            _dragWindowThumb.DoubleTapped += DragThumbOnDoubleTapped;
+            _leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
+            _leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+            _leftDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
+            
+            _rightDragWindowThumb = e.NameScope.Get<Thumb>("PART_RightDragWindowThumb");
+            _rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+            _rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
             
             _topPanel = e.NameScope.Get<TopPanel>("PART_TopPanel");
         }
@@ -146,7 +151,7 @@ namespace TabaloniaNew.Controls
         }
         
         
-        private void DragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
+        private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
         {
             var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
 
@@ -154,7 +159,7 @@ namespace TabaloniaNew.Controls
         }
     
         
-        private void DragThumbOnDragDelta(object? sender, VectorEventArgs e)
+        private void WindowDragThumbOnDragDelta(object? sender, VectorEventArgs e)
         {
             var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
 

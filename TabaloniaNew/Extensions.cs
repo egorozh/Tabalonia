@@ -84,9 +84,7 @@ internal static class Extensions
         if (window is null)
             return;
 
-        window.WindowState = window.WindowState != WindowState.Maximized
-            ? WindowState.Maximized
-            : WindowState.Normal;
+        window.WindowState = WindowState.Maximized;
     }
 
 
