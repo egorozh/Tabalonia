@@ -25,50 +25,40 @@ namespace TabaloniaNew.Demo.ViewModels
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab4",
+                SimpleContent = "Tab 4 content"
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab5",
+                SimpleContent = "Tab 5 content"
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab6",
+                SimpleContent = "Tab 6 content"
                 
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab7",
+                SimpleContent = "Tab 7 content"
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab8",
+                SimpleContent = "Tab 8 content"
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab9",
+                SimpleContent = "Tab 9 content"
             },
             new TabItemViewModel
             {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
+                Header = "Tab10",
+                SimpleContent = "Tab 10 content"
             },
-            new TabItemViewModel
-            {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
-            },
-            new TabItemViewModel
-            {
-                Header = "Tab3",
-                SimpleContent = "Tab 3 content"
-            }
         };
     }
 }

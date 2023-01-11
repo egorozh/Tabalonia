@@ -13,7 +13,6 @@ namespace TabaloniaNew.Panels
         private readonly Dictionary<DragTabItem, LocationInfo> _itemsLocations = new();
         private double _itemWidth;
         private readonly Dictionary<DragTabItem, double> _activeStoryboardTargetLocations = new();
-        private bool _isDragging;
         private DragTabItem? _dragItem;
 
         public TabsPanel()
@@ -47,24 +46,18 @@ namespace TabaloniaNew.Panels
                 IsDragging: true
             });
             
-            bool isDragging = draggedItem is not null;
-            
-            if (isDragging)
-                _dragItem = draggedItem;
-
-            if (_isDragging && !isDragging)
+            if (_dragItem is not null && draggedItem is null)
             {
-                _isDragging = false;
                 var oldDragItem = _dragItem;
                 _dragItem = null;
                 
                 return DragCompletedArrangeImpl(oldDragItem, finalSize);
             }
             
-            _isDragging = isDragging;
+            _dragItem = draggedItem;
             
-            return isDragging
-                ? DragArrangeImpl(_dragItem, finalSize) 
+            return draggedItem is not null
+                ? DragArrangeImpl(draggedItem, finalSize) 
                 : ArrangeImpl(finalSize);
         }
         
@@ -265,25 +258,7 @@ namespace TabaloniaNew.Panels
             //         }
             //     }
             // };
-
-            // DoubleTransition an = new()
-            // {
-            //     Easing = new CubicEaseOut(),
-            //     Duration = TimeSpan.FromMilliseconds(200)
-            // };
-            //
-            // var subject = new Subject<double>();
-            //
-            // subject.Subscribe(
-            //     onNext: x => { SetLocation(item, x, width); },
-            //     onCompleted: () =>
-            //     {
-            //       
-            //     });
-            //
-            // an.DoTransition(subject, item.X, location);
-            // an.Apply(item, null, item.X, location);
-
+            
             //await animation.RunAsync(item, null);
 
             SetLocation(item, location, width);

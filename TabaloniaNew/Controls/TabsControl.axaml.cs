@@ -39,7 +39,7 @@ namespace TabaloniaNew.Controls
                 
                 _tabsPanel = new TabsPanel
                 {
-                    ItemWidth = 200,
+                    ItemWidth = 250,
                     ItemOffset = -8
                 };
                 
