@@ -13,6 +13,8 @@ namespace TabaloniaNew.Panels
         private readonly Dictionary<DragTabItem, LocationInfo> _itemsLocations = new();
         private double _itemWidth;
         private readonly Dictionary<DragTabItem, double> _activeStoryboardTargetLocations = new();
+        private bool _isDragging;
+        private DragTabItem? _dragItem;
 
         public TabsPanel()
         {
@@ -45,8 +47,24 @@ namespace TabaloniaNew.Panels
                 IsDragging: true
             });
             
-            return draggedItem is not null 
-                ? DragArrangeImpl(draggedItem, finalSize) 
+            bool isDragging = draggedItem is not null;
+            
+            if (isDragging)
+                _dragItem = draggedItem;
+
+            if (_isDragging && !isDragging)
+            {
+                _isDragging = false;
+                var oldDragItem = _dragItem;
+                _dragItem = null;
+                
+                return DragCompletedArrangeImpl(oldDragItem, finalSize);
+            }
+            
+            _isDragging = isDragging;
+            
+            return isDragging
+                ? DragArrangeImpl(_dragItem, finalSize) 
                 : ArrangeImpl(finalSize);
         }
         
@@ -159,6 +177,30 @@ namespace TabaloniaNew.Panels
             return finalSize;
         }
 
+        
+        private Size DragCompletedArrangeImpl(DragTabItem dragItem, Size finalSize)
+        {
+            var dragItemsLocations = GetLocations(Children.OfType<DragTabItem>(), dragItem);
+            
+            double currentCoord = 0.0;
+            int z = int.MaxValue;
+            int logicalIndex = 0;
+
+            foreach (var location in dragItemsLocations)
+            {
+                var item = location.Item;
+
+                SetLocation(item, currentCoord, _itemWidth);
+                currentCoord += _itemWidth + ItemOffset;
+                item.ZIndex = --z;
+                item.LogicalIndex = logicalIndex++;
+            }
+
+            dragItem.ZIndex = int.MaxValue;
+            
+            return finalSize;
+        }
+        
 
         private double GetAvailableWidth(Size availableSize)
         {

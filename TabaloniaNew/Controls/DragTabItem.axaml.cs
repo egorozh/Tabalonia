@@ -84,8 +84,8 @@ public class DragTabItem : TabItem
     public static readonly RoutedEvent<DragTabDragDeltaEventArgs> DragDelta =
         RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("DragDelta", RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<DragablzDragCompletedEventArgs> DragCompleted =
-        RoutedEvent.Register<DragTabItem, DragablzDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<DragTabDragCompletedEventArgs> DragCompleted =
+        RoutedEvent.Register<DragTabItem, DragTabDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
 
     public static readonly RoutedEvent<DragTabDragDeltaEventArgs> PreviewDragDelta =
         RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel);
@@ -129,7 +129,7 @@ public class DragTabItem : TabItem
     
     private void ThumbOnDragCompleted(object? sender, VectorEventArgs e)
     {
-        var args = new DragablzDragCompletedEventArgs(DragCompleted, this, e);
+        var args = new DragTabDragCompletedEventArgs(DragCompleted, this, e);
         RaiseEvent(args);
     }
     

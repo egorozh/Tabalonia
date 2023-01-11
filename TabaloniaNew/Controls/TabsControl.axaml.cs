@@ -1,3 +1,4 @@
+using System.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -17,8 +18,8 @@ namespace TabaloniaNew.Controls
 
         private Thumb _rightDragWindowThumb;
         private TabsPanel _tabsPanel;
-        private TopPanel _topPanel;
         private Thumb _leftDragWindowThumb;
+        private DragTabItem? _draggedItem;
 
         #endregion
        
@@ -63,7 +64,7 @@ namespace TabaloniaNew.Controls
             _rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
             _rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
             
-            _topPanel = e.NameScope.Get<TopPanel>("PART_TopPanel");
+            e.NameScope.Get<TopPanel>("PART_TopPanel");
         }
 
         
@@ -79,15 +80,15 @@ namespace TabaloniaNew.Controls
         
         private void ItemDragStarted(object? sender, DragTabDragStartedEventArgs e)
         {
-            var draggedItem = e.TabItem;
+            _draggedItem = e.TabItem;
             
-            SetDraggingItem(draggedItem);
+            SetDraggingItem(_draggedItem);
             
             e.Handled = true;
             
-            draggedItem.IsSelected = true;
+            _draggedItem.IsSelected = true;
 
-            var itemInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, draggedItem));
+            var itemInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, _draggedItem));
 
             if (itemInfo != null)
             {
@@ -98,6 +99,31 @@ namespace TabaloniaNew.Controls
 
                 SelectedItem = item;
             }
+        }
+        
+
+        private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
+        {
+            _draggedItem.X += e.DragDeltaEventArgs.Vector.X;
+            _draggedItem.Y += e.DragDeltaEventArgs.Vector.Y;
+            
+            Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
+          
+            e.Handled = true;
+        }
+        
+        
+        private void ItemDragCompleted(object? sender, DragTabDragCompletedEventArgs e)
+        {
+            foreach (var item in DragTabItems)
+            {
+                item.IsDragging = false;
+                item.IsSiblingDragging = false;
+            }
+            
+            _tabsPanel.LayoutUpdated += TabsPanelOnLayoutUpdated;
+            
+            Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
         }
 
         
@@ -112,45 +138,46 @@ namespace TabaloniaNew.Controls
             draggedItem.IsDragging = true;
             draggedItem.IsSiblingDragging = false;
         }
-
-
-        private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
+        
+        
+        private void TabsPanelOnLayoutUpdated(object? sender, EventArgs e)
         {
-            DragTabItem currentItem = e.TabItem;
-
-            currentItem.X += e.DragDeltaEventArgs.Vector.X;
-            currentItem.Y += e.DragDeltaEventArgs.Vector.Y;
+            _tabsPanel.LayoutUpdated -= TabsPanelOnLayoutUpdated;
             
-            // desiredLocation =
-            //     ItemsOrganiser.ConstrainLocation(this, this.Bounds, desiredLocation, currentItem, AddButton, _dragThumb);
-            //
-            // var siblingsItems = DragTabItems.Except(new[] {currentItem}).ToList();
-            //
-            // foreach (var dragableItem in siblingsItems)
-            //     dragableItem.IsSiblingDragging = true;
-            //
-            // currentItem.IsDragging = true;
+            MoveTabModelsIfNeeded();
 
-            // ItemsOrganiser.OrganiseOnDrag(siblingsItems, currentItem, AddButton, _dragThumb);
-
-            Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
-          
-            e.Handled = true;
+            _draggedItem = null;
         }
-        
-        
-        private void ItemDragCompleted(object? sender, DragablzDragCompletedEventArgs e)
+
+
+        private void MoveTabModelsIfNeeded()
         {
-            foreach (var item in DragTabItems)
+            var itemInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, _draggedItem));
+
+            if (itemInfo != null)
             {
-                item.IsDragging = false;
-                item.IsSiblingDragging = false;
+                object item = itemInfo.Item;
+                DragTabItem container = (DragTabItem) itemInfo.ContainerControl;
+
+                if (Items is IList list)
+                {
+                    if (container.LogicalIndex != list.IndexOf(item))
+                    {
+                        list.Remove(item);
+                        list.Insert(container.LogicalIndex, item);
+                        
+                        SelectedItem = item;
+
+                        for (int i = 0; i < DragTabItems.Count; i++)
+                        {
+                            DragTabItems[i].LogicalIndex = i;
+                        }
+                    }
+                }
             }
-            
-            Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
         }
-        
-        
+
+
         private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
         {
             var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();

@@ -9,20 +9,20 @@ public class DragTabDragStartedEventArgs : DragTabItemEventArgs
     public DragTabDragStartedEventArgs(DragTabItem dragTabItem, VectorEventArgs dragStartedEventArgs)
         : base(dragTabItem)
     {
-        DragStartedEventArgs = dragStartedEventArgs ?? throw new ArgumentNullException(nameof(dragStartedEventArgs));
+        //DragStartedEventArgs = dragStartedEventArgs ?? throw new ArgumentNullException(nameof(dragStartedEventArgs));
     }
 
     public DragTabDragStartedEventArgs(RoutedEvent routedEvent, DragTabItem tabItem, VectorEventArgs dragStartedEventArgs)
         : base(routedEvent, tabItem)
     {
-        DragStartedEventArgs = dragStartedEventArgs;
+        //DragStartedEventArgs = dragStartedEventArgs;
     }
 
     public DragTabDragStartedEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem tabItem, VectorEventArgs dragStartedEventArgs)
         : base(routedEvent, source, tabItem)
     {
-        DragStartedEventArgs = dragStartedEventArgs;
+        //DragStartedEventArgs = dragStartedEventArgs;
     }
 
-    public VectorEventArgs DragStartedEventArgs { get; }
+    //public VectorEventArgs DragStartedEventArgs { get; }
 }

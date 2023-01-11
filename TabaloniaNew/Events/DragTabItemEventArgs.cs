@@ -22,7 +22,6 @@ public abstract class DragTabItemEventArgs : RoutedEventArgs
     {
         TabItem = tabItem;
     }
-
     
     
     public DragTabItem TabItem { get; }
