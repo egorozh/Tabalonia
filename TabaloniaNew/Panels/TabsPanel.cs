@@ -12,7 +12,7 @@ namespace TabaloniaNew.Panels
     {
         private readonly Dictionary<DragTabItem, LocationInfo> _itemsLocations = new();
         private double _itemWidth;
-
+        private readonly Dictionary<DragTabItem, double> _activeStoryboardTargetLocations = new();
 
         public TabsPanel()
         {
@@ -79,8 +79,6 @@ namespace TabaloniaNew.Panels
 
         private Size DragMeasureImpl(DragTabItem draggedItem, Size availableSize)
         {
-            double availableWidth = _itemWidth;
-
             double height = 0;
             double width = 0;
 
@@ -88,9 +86,9 @@ namespace TabaloniaNew.Panels
 
             foreach (var tabItem in Children)
             {
-                tabItem.Measure(new Size(availableWidth, availableSize.Height));
+                tabItem.Measure(new Size(_itemWidth, availableSize.Height));
                 
-                width += availableWidth;
+                width += _itemWidth;
                 height = Max(tabItem.DesiredSize.Height, height);
 
                 if (!isFirst)
@@ -99,8 +97,8 @@ namespace TabaloniaNew.Panels
                 isFirst = false;
             }
             
-            if (draggedItem.X + availableWidth > width)
-                return new Size(draggedItem.X + availableWidth, height);
+            if (draggedItem.X + _itemWidth > width)
+                return new Size(draggedItem.X + _itemWidth, height);
             
             return new Size(width, height);
         }
@@ -108,8 +106,6 @@ namespace TabaloniaNew.Panels
         
         private Size ArrangeImpl(Size finalSize)
         {
-            double availableWidth = _itemWidth;
-
             double x = 0;
             int z = int.MaxValue;
 
@@ -122,11 +118,11 @@ namespace TabaloniaNew.Panels
 
                 tabItem.ZIndex = tabItem.IsSelected ? int.MaxValue : --z;
                 
-                SetLocation(tabItem, x, availableWidth);
+                SetLocation(tabItem, x, _itemWidth);
                 
                 _itemsLocations.Add(tabItem, GetLocationInfo(tabItem));
 
-                x += availableWidth + ItemOffset;
+                x += _itemWidth + ItemOffset;
             }
 
             return finalSize;
@@ -199,18 +195,16 @@ namespace TabaloniaNew.Panels
         }
         
         
-        private async void SendToLocation(DragTabItem item, double location, double width)
+        private void SendToLocation(DragTabItem item, double location, double width)
         {
-            if (Math.Abs(item.X - location) < 1.0)
-                //||
-                //_activeStoryboardTargetLocations.TryGetValue(dragTabItem, out var activeTarget)
-                //&& Math.Abs(activeTarget - location) < 1.0)
+            if (Abs(item.X - location) < 1.0
+                || _activeStoryboardTargetLocations.TryGetValue(item, out double activeTarget) && Abs(activeTarget - location) < 1.0)
             {
                 return;
             }
 
-            // _activeStoryboardTargetLocations[dragTabItem] = location;
-            //
+            _activeStoryboardTargetLocations[item] = location;
+            
             // var animation = new Animation
             // {
             //     Easing = new CubicEaseOut(),
@@ -229,12 +223,30 @@ namespace TabaloniaNew.Panels
             //         }
             //     }
             // };
+
+            // DoubleTransition an = new()
+            // {
+            //     Easing = new CubicEaseOut(),
+            //     Duration = TimeSpan.FromMilliseconds(200)
+            // };
             //
-            // await animation.RunAsync(dragTabItem, null);
+            // var subject = new Subject<double>();
+            //
+            // subject.Subscribe(
+            //     onNext: x => { SetLocation(item, x, width); },
+            //     onCompleted: () =>
+            //     {
+            //       
+            //     });
+            //
+            // an.DoTransition(subject, item.X, location);
+            // an.Apply(item, null, item.X, location);
+
+            //await animation.RunAsync(item, null);
 
             SetLocation(item, location, width);
             
-            //_activeStoryboardTargetLocations.Remove(dragTabItem);
+            _activeStoryboardTargetLocations.Remove(item);
         }
 
 
@@ -249,12 +261,12 @@ namespace TabaloniaNew.Panels
         }
         
         
-        private static LocationInfo GetLocationInfo(DragTabItem item)
+        private LocationInfo GetLocationInfo(DragTabItem item)
         {
             double size = item.Bounds.Width;
             
-            //if (!_activeStoryboardTargetLocations.TryGetValue(item, out var startLocation))
-            double startLocation = item.X;
+            if (!_activeStoryboardTargetLocations.TryGetValue(item, out double startLocation))
+                startLocation = item.X;
             
             double midLocation = startLocation + size / 2;
             double endLocation = startLocation + size;
