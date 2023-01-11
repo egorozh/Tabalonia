@@ -99,7 +99,6 @@
                                 <Button.IsVisible>
                                     <MultiBinding Converter="{StaticResource ShowDefaultCloseButtonConverter}">
                                         <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}" Path="ShowDefaultCloseButton" />
-                                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}" Path="FixedHeaderCount" />
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="LogicalIndex" />
                                     </MultiBinding>
                                 </Button.IsVisible>

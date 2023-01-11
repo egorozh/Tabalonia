@@ -115,8 +115,8 @@ public class DragTabItem : TabItem
     {
         var previewEventArgs = new DragTabDragDeltaEventArgs(PreviewDragDelta, this, e);
         RaiseEvent(previewEventArgs);
-        //if (previewEventArgs.Cancel)
-        //    thumb.CancelDrag();
+        // if (previewEventArgs.Cancel)
+        //     _thumb.CancelDrag();
         if (!previewEventArgs.Handled)
         {
             var eventArgs = new DragTabDragDeltaEventArgs(DragDelta, this, e);

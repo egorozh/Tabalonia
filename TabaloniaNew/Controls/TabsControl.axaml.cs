@@ -1,11 +1,14 @@
 using System.Collections;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using TabaloniaNew.Events;
 using TabaloniaNew.Panels;
 
@@ -22,8 +25,16 @@ namespace TabaloniaNew.Controls
         private DragTabItem? _draggedItem;
 
         #endregion
+        
+        
+        #region Avalonia Properties
+        
+        public static readonly StyledProperty<bool> ShowDefaultCloseButtonProperty =
+            AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton), defaultValue: true);
        
+        #endregion
 
+        
         #region Constructor
 
         public TabsControl()
@@ -47,6 +58,45 @@ namespace TabaloniaNew.Controls
             });
         }
 
+        #endregion
+        
+        
+        #region Public Properties
+        
+        public bool ShowDefaultCloseButton
+        {
+            get => GetValue(ShowDefaultCloseButtonProperty);
+            set => SetValue(ShowDefaultCloseButtonProperty, value);
+        }
+        
+        #endregion
+        
+        
+        #region Public Methods
+        
+        public void CloseItem(object tabItemSource)
+        {
+            if (tabItemSource == null)
+                throw new ApplicationException("Valid DragItem to close is required.");
+
+            var tabItem = FindDragTabItem(tabItemSource);
+
+            if (tabItem == null)
+                return;
+
+            var cancel = false;
+
+            //if (ClosingItemCallback != null)
+            //{
+            //    var callbackArgs = new ItemActionCallbackArgs<TabablzControl>(Window.GetWindow(owner), owner, item);
+            //    ClosingItemCallback(callbackArgs);
+            //    cancel = callbackArgs.IsCancelled;
+            //}
+
+            if (!cancel)
+                RemoveItem(tabItem);
+        }
+        
         #endregion
         
         
@@ -74,6 +124,36 @@ namespace TabaloniaNew.Controls
         
         
         #region Private Methods
+        
+        private void RemoveItem(DragTabItem container)
+        {
+            var containerInfo =
+                ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, container));
+
+            if (containerInfo == null)
+                return;
+
+            object item = containerInfo.Item;
+            
+            if (Items is IList itemsList)
+            {
+                itemsList.Remove(item);
+
+                if (itemsList.Count == 0)
+                {
+                    CloseThisWindow();
+                }
+            }
+        }
+
+        
+        private void CloseThisWindow()
+        {
+            var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
+
+            window?.Close();
+        }
+
 
         private IReadOnlyList<DragTabItem> DragTabItems => ItemContainerGenerator.Containers<DragTabItem>().ToList();
         
@@ -177,6 +257,27 @@ namespace TabaloniaNew.Controls
             }
         }
 
+        
+        private static DragTabItem? FindDragTabItem(object originalSource)
+        {
+            if (originalSource is DragTabItem dragTabItem)
+                return dragTabItem;
+
+            if (originalSource is IVisual visual &&
+                visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
+            {
+                return item;
+            }
+
+            if (originalSource is ILogical logical &&
+                logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
+            {
+                return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
+            }
+
+            return null;
+        }
+        
 
         private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
         {
