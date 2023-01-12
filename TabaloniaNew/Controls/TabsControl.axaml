@@ -65,7 +65,8 @@
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
                                             ItemTemplate="{TemplateBinding ItemTemplate}" />
 
-                            <Button Content="+" />
+                            <Button Content="+" 
+                                    Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
                                    Background="#3300ff00"

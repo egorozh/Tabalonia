@@ -6,9 +6,10 @@
         xmlns:dragablzDemo="clr-namespace:TabaloniaNew.Demo.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="TabaloniaNew.Demo.MainWindow"
-        Title="TabaloniaNew.Demo">
+        Title="Tabalonia Demo">
     
-    <controls:TabsControl Items="{Binding TabItems}">
+    <controls:TabsControl Items="{Binding TabItems}"
+                          NewItemFactory="{Binding NewItemFactory}">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">

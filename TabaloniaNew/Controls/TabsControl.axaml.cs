@@ -32,6 +32,10 @@ namespace TabaloniaNew.Controls
         public static readonly StyledProperty<bool> ShowDefaultCloseButtonProperty =
             AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton), defaultValue: true);
        
+        
+        public static readonly StyledProperty<Func<object>?> NewItemFactoryProperty =
+            AvaloniaProperty.Register<TabsControl, Func<object>?>(nameof(NewItemFactory));
+        
         #endregion
 
         
@@ -69,6 +73,13 @@ namespace TabaloniaNew.Controls
             set => SetValue(ShowDefaultCloseButtonProperty, value);
         }
         
+        
+        public Func<object>? NewItemFactory
+        {
+            get => GetValue(NewItemFactoryProperty);
+            set => SetValue(NewItemFactoryProperty, value);
+        }
+        
         #endregion
         
         
@@ -83,18 +94,24 @@ namespace TabaloniaNew.Controls
 
             if (tabItem == null)
                 return;
+            
+            RemoveItem(tabItem);
+        }
+        
+        
+        public void AddItem()
+        {
+            object? newItem = NewItemFactory?.Invoke();
+            
+            if (newItem == null) 
+                throw new ApplicationException("NewItemFactory is null or returned null.");
 
-            var cancel = false;
+            if (Items is IList itemsList)
+                itemsList.Add(newItem);
+            
+            SelectedItem = newItem;
 
-            //if (ClosingItemCallback != null)
-            //{
-            //    var callbackArgs = new ItemActionCallbackArgs<TabablzControl>(Window.GetWindow(owner), owner, item);
-            //    ClosingItemCallback(callbackArgs);
-            //    cancel = callbackArgs.IsCancelled;
-            //}
-
-            if (!cancel)
-                RemoveItem(tabItem);
+            //Dispatcher.UIThread.Post(ItemsPresenter.InvalidateMeasure, DispatcherPriority.Loaded);
         }
         
         #endregion
