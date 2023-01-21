@@ -246,8 +246,7 @@ public class TabsPanel : Panel
             return;
         }
         
-        if (Abs(item.X - location) < 1.0
-            || itemIsAnimating && Abs(activeTarget - location) < 1.0)
+        if (Abs(item.X - location) < 1.0 || itemIsAnimating && Abs(activeTarget - location) < 1.0)
         {
             return;
         }
