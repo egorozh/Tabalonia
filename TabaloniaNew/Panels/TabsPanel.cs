@@ -1,7 +1,10 @@
 using static System.Math;
 
 using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using TabaloniaNew.Controls;
 
 
@@ -19,7 +22,13 @@ public class TabsPanel : Panel
     public double ItemWidth { get; internal set; }
 
     public double ItemOffset { get; internal set; }
+    
 
+    static TabsPanel()
+    {
+        AffectsParentArrange<TabsPanel>(DragTabItem.XProperty);
+    }
+    
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -233,36 +242,46 @@ public class TabsPanel : Panel
     }
         
         
-    private void SendToLocation(DragTabItem item, double location, double width)
+    private async void SendToLocation(DragTabItem item, double location, double width)
     {
+        bool itemIsAnimating = _activeStoryboardTargetLocations.TryGetValue(item, out double activeTarget);
+        
+        if (itemIsAnimating)
+        {
+            SetLocation(item, item.X, width);
+            return;
+        }
+        
         if (Abs(item.X - location) < 1.0
-            || _activeStoryboardTargetLocations.TryGetValue(item, out double activeTarget) && Abs(activeTarget - location) < 1.0)
+            || itemIsAnimating && Abs(activeTarget - location) < 1.0)
         {
             return;
         }
-
+        
         _activeStoryboardTargetLocations[item] = location;
+
+        const int animDuration = 200;
+
+        var animation = new Animation
+        {
+            Easing = new CubicEaseOut(),
+            Duration = TimeSpan.FromMilliseconds(animDuration),
+            PlaybackDirection = PlaybackDirection.Normal,
+            FillMode = FillMode.None,
+            Children =
+            {
+                new KeyFrame
+                {
+                    KeyTime = TimeSpan.FromMilliseconds(animDuration),
+                    Setters =
+                    {
+                        new Setter(DragTabItem.XProperty, location),
+                    }
+                }
+            }
+        };
             
-        // var animation = new Animation
-        // {
-        //     Easing = new CubicEaseOut(),
-        //     Duration = TimeSpan.FromMilliseconds(200),
-        //     PlaybackDirection = PlaybackDirection.Normal,
-        //     FillMode = FillMode.None,
-        //     Children =
-        //     {
-        //         new KeyFrame
-        //         {
-        //             KeyTime = TimeSpan.FromMilliseconds(200),
-        //             Setters =
-        //             {
-        //                 new Setter(_canvasProperty, location),
-        //             }
-        //         }
-        //     }
-        // };
-            
-        //await animation.RunAsync(item, null);
+        await animation.RunAsync(item, null);
 
         SetLocation(item, location, width);
             
