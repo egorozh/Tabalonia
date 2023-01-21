@@ -27,10 +27,9 @@ namespace TabaloniaNew.Controls
         
         
         #region Private Fields
-
-        private Thumb _rightDragWindowThumb;
-        private TabsPanel _tabsPanel;
-        private Thumb _leftDragWindowThumb;
+        
+        private readonly TabsPanel _tabsPanel;
+        
         private DragTabItem? _draggedItem;
         private bool _dragging;
         
@@ -57,19 +56,13 @@ namespace TabaloniaNew.Controls
             AddHandler(DragTabItem.DragDelta, ItemDragDelta);
             AddHandler(DragTabItem.DragCompleted, ItemDragCompleted, handledEventsToo: true);
 
-            ItemsPanel = new FuncTemplate<IPanel>(() =>
+            _tabsPanel = new TabsPanel
             {
-                if (_tabsPanel is not null)
-                    return _tabsPanel;
-                
-                _tabsPanel = new TabsPanel
-                {
-                    ItemWidth = DefaultTabWidth,
-                    ItemOffset = DefaultTabOffset
-                };
-                
-                return _tabsPanel;
-            });
+                ItemWidth = DefaultTabWidth,
+                ItemOffset = DefaultTabOffset
+            };
+            
+            ItemsPanel = new FuncTemplate<IPanel>(() => _tabsPanel);
         }
 
         #endregion
@@ -131,15 +124,13 @@ namespace TabaloniaNew.Controls
         {
             base.OnApplyTemplate(e);
 
-            _leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
-            _leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
-            _leftDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
+            var leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
+            leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+            leftDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
             
-            _rightDragWindowThumb = e.NameScope.Get<Thumb>("PART_RightDragWindowThumb");
-            _rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
-            _rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
-            
-            e.NameScope.Get<TopPanel>("PART_TopPanel");
+            var rightDragWindowThumb = e.NameScope.Get<Thumb>("PART_RightDragWindowThumb");
+            rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+            rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
         }
 
         
