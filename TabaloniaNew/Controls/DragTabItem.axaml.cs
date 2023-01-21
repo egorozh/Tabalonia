@@ -5,7 +5,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using TabaloniaNew.Events;
 
+
 namespace TabaloniaNew.Controls;
+
 
 public class DragTabItem : TabItem
 {
