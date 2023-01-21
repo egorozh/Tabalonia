@@ -24,12 +24,6 @@ public class TabsPanel : Panel
     public double ItemOffset { get; internal set; }
     
 
-    static TabsPanel()
-    {
-        AffectsParentArrange<TabsPanel>(DragTabItem.XProperty);
-    }
-    
-
     protected override Size MeasureOverride(Size availableSize)
     {
         var draggedItem = (DragTabItem?) Children.FirstOrDefault(c => c is DragTabItem
