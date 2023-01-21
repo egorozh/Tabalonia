@@ -23,7 +23,8 @@ namespace TabaloniaNew.Controls
         private TabsPanel _tabsPanel;
         private Thumb _leftDragWindowThumb;
         private DragTabItem? _draggedItem;
-
+        private bool _dragging;
+        
         #endregion
         
         
@@ -151,19 +152,32 @@ namespace TabaloniaNew.Controls
                 return;
 
             object item = containerInfo.Item;
-            
-            if (Items is IList itemsList)
-            {
-                itemsList.Remove(item);
 
-                if (itemsList.Count == 0)
-                {
-                    CloseThisWindow();
-                }
+            if (Items is not IList itemsList)
+                return;
+
+            int removedItemIndex = itemsList.IndexOf(item);
+            bool removedItemIsSelected = SelectedItem == item;
+            
+            itemsList.Remove(item);
+
+            if (itemsList.Count == 0)
+            {
+                CloseThisWindow();
+            }
+            else if (removedItemIsSelected)
+            {
+                SetSelectedNewTab(itemsList, removedItemIndex);
             }
         }
 
         
+        private void SetSelectedNewTab(IList items, int removedItemIndex)
+        {
+            SelectedItem = removedItemIndex == items.Count ? items[^1] : items[removedItemIndex];
+        }
+
+
         private void CloseThisWindow()
         {
             var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
@@ -178,8 +192,6 @@ namespace TabaloniaNew.Controls
         private void ItemDragStarted(object? sender, DragTabDragStartedEventArgs e)
         {
             _draggedItem = e.TabItem;
-            
-            SetDraggingItem(_draggedItem);
             
             e.Handled = true;
             
@@ -201,6 +213,12 @@ namespace TabaloniaNew.Controls
 
         private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
         {
+            if (!_dragging)
+            {
+                _dragging = true;
+                SetDraggingItem(_draggedItem);
+            }
+            
             _draggedItem.X += e.DragDeltaEventArgs.Vector.X;
             _draggedItem.Y += e.DragDeltaEventArgs.Vector.Y;
             
@@ -212,6 +230,9 @@ namespace TabaloniaNew.Controls
         
         private void ItemDragCompleted(object? sender, DragTabDragCompletedEventArgs e)
         {
+            if (!_dragging)
+                return;
+
             foreach (var item in DragTabItems)
             {
                 item.IsDragging = false;
@@ -221,6 +242,8 @@ namespace TabaloniaNew.Controls
             _tabsPanel.LayoutUpdated += TabsPanelOnLayoutUpdated;
             
             Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
+            
+            _dragging = false;
         }
 
         
