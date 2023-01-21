@@ -57,7 +57,6 @@
                                          HorizontalAlignment="Stretch">
                             
                             <Thumb Name="PART_LeftDragWindowThumb"
-                                   Background="#3300ff00"
                                    MinWidth="80"
                                    Theme="{StaticResource WindowThumbStyle}"/>
                             
@@ -70,7 +69,6 @@
                                     Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
-                                   Background="#3300ff00"
                                    MinWidth="50"
                                    Theme="{StaticResource WindowThumbStyle}"/>
 
