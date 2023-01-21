@@ -159,6 +159,14 @@ namespace TabaloniaNew.Panels
                 }
                 else
                 {
+                    double maxX = finalSize.Width - _itemWidth;
+
+                    if (dragItem.X > maxX) dragItem.X = maxX;
+
+                    const double minX = 0;
+
+                    if (dragItem.X < minX) dragItem.X = minX;
+
                     SetLocation(dragItem, dragItem.X, _itemWidth);
                 }
                 
