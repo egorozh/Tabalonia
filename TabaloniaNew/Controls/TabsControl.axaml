@@ -37,7 +37,7 @@
     
     <ControlTheme x:Key="{x:Type controls:TabsControl}" TargetType="controls:TabsControl">
         
-        <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
+        <Setter Property="Background" Value="{DynamicResource TabControlWindowActiveBackgroundBrush}" />
         <Setter Property="Margin" Value="0 0 0 2" />
         
         <Setter Property="Template">
@@ -53,6 +53,7 @@
 
                         <panels:TopPanel Grid.Row="0"
                                          Name="PART_TopPanel"
+                                         Background="{TemplateBinding Background}"
                                          HorizontalAlignment="Stretch">
                             
                             <Thumb Name="PART_LeftDragWindowThumb"
@@ -65,7 +66,7 @@
                                             ItemsPanel="{TemplateBinding ItemsPanel}"
                                             ItemTemplate="{TemplateBinding ItemTemplate}" />
 
-                            <Button Content="+" 
+                            <Button Classes="AddItemCommandButtonStyle" 
                                     Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
@@ -86,6 +87,7 @@
                 </Border>
             </ControlTemplate>
         </Setter>
+        
     </ControlTheme>
 
 </ResourceDictionary>

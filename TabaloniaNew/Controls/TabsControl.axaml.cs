@@ -17,6 +17,15 @@ namespace TabaloniaNew.Controls
 {
     public class TabsControl : TabControl
     {
+        #region Constants
+
+        private const double DefaultTabWidth = 250;
+        
+        private const double DefaultTabOffset = -8;
+
+        #endregion
+        
+        
         #region Private Fields
 
         private Thumb _rightDragWindowThumb;
@@ -55,8 +64,8 @@ namespace TabaloniaNew.Controls
                 
                 _tabsPanel = new TabsPanel
                 {
-                    ItemWidth = 250,
-                    ItemOffset = -8
+                    ItemWidth = DefaultTabWidth,
+                    ItemOffset = DefaultTabOffset
                 };
                 
                 return _tabsPanel;
@@ -111,8 +120,6 @@ namespace TabaloniaNew.Controls
                 itemsList.Add(newItem);
             
             SelectedItem = newItem;
-
-            //Dispatcher.UIThread.Post(ItemsPresenter.InvalidateMeasure, DispatcherPriority.Loaded);
         }
         
         #endregion
@@ -162,28 +169,17 @@ namespace TabaloniaNew.Controls
             itemsList.Remove(item);
 
             if (itemsList.Count == 0)
-            {
-                CloseThisWindow();
-            }
-            else if (removedItemIsSelected)
-            {
+                GetThisWindow()?.Close();
+            else if (removedItemIsSelected) 
                 SetSelectedNewTab(itemsList, removedItemIndex);
-            }
         }
 
         
-        private void SetSelectedNewTab(IList items, int removedItemIndex)
-        {
+        private void SetSelectedNewTab(IList items, int removedItemIndex) =>
             SelectedItem = removedItemIndex == items.Count ? items[^1] : items[removedItemIndex];
-        }
 
 
-        private void CloseThisWindow()
-        {
-            var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
-
-            window?.Close();
-        }
+        private Window? GetThisWindow() => this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
 
 
         private IReadOnlyList<DragTabItem> DragTabItems => ItemContainerGenerator.Containers<DragTabItem>().ToList();
@@ -213,6 +209,9 @@ namespace TabaloniaNew.Controls
 
         private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
         {
+            if (_draggedItem is null)
+                throw new Exception($"{nameof(TabsControl)}.{nameof(ItemDragDelta)} - _draggedItem is null");
+
             if (!_dragging)
             {
                 _dragging = true;

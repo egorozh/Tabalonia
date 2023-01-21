@@ -71,7 +71,7 @@ public class TopPanel : StackPanel
             tabsControl.Arrange(new Rect(x, 0, tabsWidth, tabsHeight));
             x += tabsWidth;
             
-            addTabButton.Arrange(new Rect(x, 0, addTabButton.DesiredSize.Width, addTabButton.DesiredSize.Height));
+            ArrangeAddTabButton(addTabButton, x, tabsHeight);
             x += addTabButton.DesiredSize.Width;
             
             rightDragWindowThumb.Arrange(new Rect(x, 0, finalSize.Width - tabsControl.DesiredSize.Width - addTabButton.DesiredSize.Width - leftDragWindowThumb.DesiredSize.Width, tabsHeight));
@@ -84,12 +84,20 @@ public class TopPanel : StackPanel
             tabsControl.Arrange(new Rect(leftDragWindowThumb.DesiredSize.Width, 0, x, tabsHeight));
             x += leftDragWindowThumb.DesiredSize.Width;
             
-            addTabButton.Arrange(new Rect(x, 0, addTabButton.DesiredSize.Width, addTabButton.DesiredSize.Height));
+            ArrangeAddTabButton(addTabButton, x, tabsHeight);
             x += addTabButton.DesiredSize.Width;
             
             rightDragWindowThumb.Arrange(new Rect(x, 0, rightDragWindowThumb.DesiredSize.Width, tabsHeight));
         }
             
         return finalSize;
+    }
+
+    
+    private static void ArrangeAddTabButton(IControl addTabButton, double x, double parentHeight)
+    {
+        double verticalMargin = (parentHeight - addTabButton.DesiredSize.Height) / 2;
+        
+        addTabButton.Arrange(new Rect(x, verticalMargin, addTabButton.DesiredSize.Width, addTabButton.DesiredSize.Height));
     }
 }
