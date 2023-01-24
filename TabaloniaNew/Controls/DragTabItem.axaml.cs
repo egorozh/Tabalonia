@@ -90,7 +90,7 @@ public class DragTabItem : TabItem
         RoutedEvent.Register<DragTabItem, DragTabDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
 
     public static readonly RoutedEvent<DragTabDragDeltaEventArgs> PreviewDragDelta =
-        RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel);
+        RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
     
     #endregion
 
@@ -117,14 +117,20 @@ public class DragTabItem : TabItem
     {
         var previewEventArgs = new DragTabDragDeltaEventArgs(PreviewDragDelta, this, e);
         RaiseEvent(previewEventArgs);
-        // if (previewEventArgs.Cancel)
-        //     _thumb.CancelDrag();
+      
+        if (previewEventArgs.Cancel)
+        {
+          //thumb.CancelDrag();
+        }
+        
+        
         if (!previewEventArgs.Handled)
         {
             var eventArgs = new DragTabDragDeltaEventArgs(DragDelta, this, e);
             RaiseEvent(eventArgs);
-            //if (eventArgs.Cancel)
-            //    thumb.CancelDrag();
+
+            // if (eventArgs.Cancel)
+            //     CancelDrag(thumb, e.Vector, e.PointerEventArgs);
         }
     }
 

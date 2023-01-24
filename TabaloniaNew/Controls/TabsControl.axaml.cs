@@ -54,7 +54,8 @@ public class TabsControl : TabControl
     public TabsControl()
     {
         AddHandler(DragTabItem.DragStarted, ItemDragStarted, handledEventsToo: true);
-        AddHandler(DragTabItem.DragDelta, ItemDragDelta);
+        AddHandler(DragTabItem.PreviewDragDelta, ItemPreviewDragDelta, handledEventsToo: true);
+        AddHandler(DragTabItem.DragDelta, ItemDragDelta, handledEventsToo: true);
         AddHandler(DragTabItem.DragCompleted, ItemDragCompleted, handledEventsToo: true);
 
         _tabsPanel = new TabsPanel
@@ -65,7 +66,7 @@ public class TabsControl : TabControl
             
         ItemsPanel = new FuncTemplate<IPanel>(() => _tabsPanel);
     }
-
+    
     #endregion
         
         
@@ -197,7 +198,16 @@ public class TabsControl : TabControl
             SelectedItem = item;
         }
     }
+    
+    
+    private void ItemPreviewDragDelta(object? sender, DragTabDragDeltaEventArgs e)
+    {
+        var draggedItem = e.TabItem;
         
+        if (!ShouldDragWindow()) 
+            return;
+    }
+    
 
     private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
     {
@@ -324,6 +334,12 @@ public class TabsControl : TabControl
 
         window?.DragWindow(e.Vector.X, e.Vector.Y);
     }
+    
         
+    private bool ShouldDragWindow()
+    {
+        return DragTabItems.Count == 1;
+    }
+    
     #endregion
 }
