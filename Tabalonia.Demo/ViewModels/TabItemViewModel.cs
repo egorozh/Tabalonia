@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace TabaloniaNew.Demo.ViewModels
+namespace Tabalonia.Demo.ViewModels
 {
     public class TabItemViewModel : ObservableObject
     {

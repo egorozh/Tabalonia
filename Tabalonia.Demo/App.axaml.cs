@@ -1,10 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using TabaloniaNew.Demo.ViewModels;
+using Tabalonia.Demo.ViewModels;
 
-
-namespace TabaloniaNew.Demo
+namespace Tabalonia.Demo
 {
     public partial class App : Application
     {

@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 
-
-namespace TabaloniaNew.Demo
+namespace Tabalonia.Demo
 {
     public class MainWindow : Window
     {

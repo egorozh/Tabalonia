@@ -2,8 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-
-namespace TabaloniaNew.Demo.ViewModels
+namespace Tabalonia.Demo.ViewModels
 {
     public class MainViewModel : ObservableObject
     {

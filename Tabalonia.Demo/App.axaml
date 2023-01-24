@@ -1,7 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:themes="clr-namespace:TabaloniaNew.Themes;assembly=TabaloniaNew"
-             x:Class="TabaloniaNew.Demo.App">
+             x:Class="Tabalonia.Demo.App">
     
     <Application.Styles>
         <FluentTheme Mode="Dark"/>

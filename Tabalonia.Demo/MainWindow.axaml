@@ -3,9 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:TabaloniaNew.Controls;assembly=TabaloniaNew"
-        xmlns:dragablzDemo="clr-namespace:TabaloniaNew.Demo.ViewModels"
+        xmlns:dragablzDemo="clr-namespace:Tabalonia.Demo.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="TabaloniaNew.Demo.MainWindow"
+        x:Class="Tabalonia.Demo.MainWindow"
         Title="Tabalonia Demo">
     
     <controls:TabsControl Items="{Binding TabItems}"
