@@ -1,8 +1,6 @@
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
 using System.Globalization;
-using Avalonia;
-using Tabalonia.Controls;
 
 namespace Tabalonia.Converters;
 
