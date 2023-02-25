@@ -1,14 +1,12 @@
 using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using TabaloniaNew.Events;
 using TabaloniaNew.Panels;
 
@@ -63,7 +61,7 @@ public class TabsControl : TabControl
             ItemOffset = DefaultTabOffset
         };
             
-        ItemsPanel = new FuncTemplate<IPanel>(() => _tabsPanel);
+        ItemsPanel = new FuncTemplate<Panel>(() => _tabsPanel);
     }
 
     #endregion
@@ -134,8 +132,12 @@ public class TabsControl : TabControl
         rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
     }
 
-        
-    protected override IItemContainerGenerator CreateItemContainerGenerator() => new DragTabItemContainerGenerator(this);
+    
+    protected override Control CreateContainerForItemOverride() => new DragTabItem();
+    
+    
+    protected override bool IsItemItsOwnContainerOverride(Control item) => item is DragTabItem;
+
         
     #endregion
         
@@ -144,22 +146,19 @@ public class TabsControl : TabControl
         
     private void RemoveItem(DragTabItem container)
     {
-        var containerInfo =
-            ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, container));
-
-        if (containerInfo == null)
+        object? item = ItemFromContainer(container);
+        
+        if (item == null)
             return;
-
-        object item = containerInfo.Item;
-
+        
         if (Items is not IList itemsList)
             return;
-
+        
         int removedItemIndex = itemsList.IndexOf(item);
         bool removedItemIsSelected = SelectedItem == item;
             
         itemsList.Remove(item);
-
+        
         if (itemsList.Count == 0)
             GetThisWindow()?.Close();
         else if (removedItemIsSelected) 
@@ -173,10 +172,19 @@ public class TabsControl : TabControl
 
     private Window? GetThisWindow() => this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
 
+    
+    private IEnumerable<DragTabItem> DragTabItems()
+    {
+        foreach (object item in Items)
+        {
+            var container = ContainerFromItem(item);
 
-    private IReadOnlyList<DragTabItem> DragTabItems => ItemContainerGenerator.Containers<DragTabItem>().ToList();
+            if (container is DragTabItem dragTabItem)
+                yield return dragTabItem;
+        }
+    }
         
-        
+    
     private void ItemDragStarted(object? sender, DragTabDragStartedEventArgs e)
     {
         _draggedItem = e.TabItem;
@@ -184,16 +192,14 @@ public class TabsControl : TabControl
         e.Handled = true;
             
         _draggedItem.IsSelected = true;
-
-        var itemInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, _draggedItem));
-
-        if (itemInfo != null)
+        
+        object? item = ItemFromContainer(_draggedItem);
+        
+        if (item != null)
         {
-            object item = itemInfo.Item;
-
-            if (itemInfo.Item is TabItem tabItem)
+            if (item is TabItem tabItem)
                 tabItem.IsSelected = true;
-
+        
             SelectedItem = item;
         }
     }
@@ -224,7 +230,7 @@ public class TabsControl : TabControl
         if (!_dragging)
             return;
 
-        foreach (var item in DragTabItems)
+        foreach (var item in DragTabItems())
         {
             item.IsDragging = false;
             item.IsSiblingDragging = false;
@@ -240,7 +246,7 @@ public class TabsControl : TabControl
         
     private void SetDraggingItem(DragTabItem draggedItem)
     {
-        foreach (var item in DragTabItems)
+        foreach (var item in DragTabItems())
         {
             item.IsDragging = false;
             item.IsSiblingDragging = true;
@@ -263,13 +269,12 @@ public class TabsControl : TabControl
 
     private void MoveTabModelsIfNeeded()
     {
-        var itemInfo = ItemContainerGenerator.Containers.FirstOrDefault(c => Equals(c.ContainerControl, _draggedItem));
-
-        if (itemInfo != null)
+        object? item = ItemFromContainer(_draggedItem);
+        
+        if (item != null)
         {
-            object item = itemInfo.Item;
-            DragTabItem container = (DragTabItem) itemInfo.ContainerControl;
-
+            DragTabItem container = _draggedItem;
+        
             if (Items is IList list)
             {
                 if (container.LogicalIndex != list.IndexOf(item))
@@ -279,10 +284,10 @@ public class TabsControl : TabControl
                         
                     SelectedItem = item;
 
-                    for (int i = 0; i < DragTabItems.Count; i++)
-                    {
-                        DragTabItems[i].LogicalIndex = i;
-                    }
+                    int i = 0;
+                    
+                    foreach (var dragTabItem in DragTabItems()) 
+                        dragTabItem.LogicalIndex = i++;
                 }
             }
         }
@@ -294,7 +299,7 @@ public class TabsControl : TabControl
         if (originalSource is DragTabItem dragTabItem)
             return dragTabItem;
 
-        if (originalSource is IVisual visual &&
+        if (originalSource is Visual visual &&
             visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
         {
             return item;

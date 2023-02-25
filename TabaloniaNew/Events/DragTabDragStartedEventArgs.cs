@@ -20,7 +20,7 @@ public class DragTabDragStartedEventArgs : DragTabItemEventArgs
         //DragStartedEventArgs = dragStartedEventArgs;
     }
 
-    public DragTabDragStartedEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem tabItem, VectorEventArgs dragStartedEventArgs)
+    public DragTabDragStartedEventArgs(RoutedEvent routedEvent, Interactive source, DragTabItem tabItem, VectorEventArgs dragStartedEventArgs)
         : base(routedEvent, source, tabItem)
     {
         //DragStartedEventArgs = dragStartedEventArgs;

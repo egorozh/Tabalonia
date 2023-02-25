@@ -94,7 +94,7 @@ public class TopPanel : StackPanel
     }
 
     
-    private static void ArrangeAddTabButton(IControl addTabButton, double x, double parentHeight)
+    private static void ArrangeAddTabButton(Control addTabButton, double x, double parentHeight)
     {
         double verticalMargin = (parentHeight - addTabButton.DesiredSize.Height) / 2;
         

@@ -20,7 +20,7 @@ public class DragTabDragCompletedEventArgs : DragTabItemEventArgs
         //DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
     }
 
-    public DragTabDragCompletedEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs)
+    public DragTabDragCompletedEventArgs(RoutedEvent routedEvent, Interactive source, DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs)
         : base(routedEvent, source, dragItem)
     {
         

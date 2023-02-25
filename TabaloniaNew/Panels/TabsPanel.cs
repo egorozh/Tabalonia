@@ -120,7 +120,7 @@ public class TabsPanel : Panel
 
         _itemsLocations.Clear();
             
-        foreach (IControl? child in Children)
+        foreach (Control? child in Children)
         {
             if (child is not DragTabItem tabItem)
                 continue;

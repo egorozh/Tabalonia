@@ -20,7 +20,7 @@ public class DragTabDragDeltaEventArgs : DragTabItemEventArgs
         DragDeltaEventArgs = dragDeltaEventArgs ?? throw new ArgumentNullException(nameof(dragDeltaEventArgs));
     }
 
-    public DragTabDragDeltaEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem tabItem, VectorEventArgs dragDeltaEventArgs) 
+    public DragTabDragDeltaEventArgs(RoutedEvent routedEvent, Interactive source, DragTabItem tabItem, VectorEventArgs dragDeltaEventArgs) 
         : base(routedEvent, source, tabItem)
     {
         DragDeltaEventArgs = dragDeltaEventArgs ?? throw new ArgumentNullException(nameof(dragDeltaEventArgs));

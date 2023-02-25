@@ -18,7 +18,7 @@ public abstract class DragTabItemEventArgs : RoutedEventArgs
         TabItem = tabItem;
     }
 
-    protected DragTabItemEventArgs(RoutedEvent routedEvent, IInteractive source, DragTabItem tabItem)
+    protected DragTabItemEventArgs(RoutedEvent routedEvent, Interactive source, DragTabItem tabItem)
         : base(routedEvent, source) 
     {
         TabItem = tabItem;

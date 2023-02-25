@@ -22,36 +22,36 @@ internal static class Extensions
         return element;
     }
 
-    public static IEnumerable<TContainer> Containers<TContainer>(this IItemContainerGenerator itemGen)
-        where TContainer : class
-    {
-        foreach (ItemContainerInfo? info in itemGen.Containers)
-        {
-            if (info.ContainerControl is TContainer c)
-                yield return c;
-        }
-    }
+    // public static IEnumerable<TContainer> Containers<TContainer>(this ItemContainerGenerator itemGen)
+    //     where TContainer : class
+    // {
+    //     foreach (ItemContainerInfo? info in itemGen.Containers)
+    //     {
+    //         if (info.ContainerControl is TContainer c)
+    //             yield return c;
+    //     }
+    // }
 
-    public static TContainer? FindContainer<TContainer>(this IItemContainerGenerator itemGen, object? item)
-        where TContainer : class
-    {
-        if (item == null)
-            return null;
-
-        var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
-
-        if (info is {ContainerControl: TContainer c})
-            return c;
-
-        return null;
-    }
+    // public static TContainer? FindContainer<TContainer>(this ItemContainerGenerator itemGen, object? item)
+    //     where TContainer : class
+    // {
+    //     if (item == null)
+    //         return null;
+    //
+    //     var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
+    //
+    //     if (info is {ContainerControl: TContainer c})
+    //         return c;
+    //
+    //     return null;
+    // }
 
     /// <summary>
     /// Yields the visual ancestory (including the starting point).
     /// </summary>
     /// <param name="dependencyObject"></param>
     /// <returns></returns>
-    public static IEnumerable<IVisual> VisualTreeAncestory(this IVisual dependencyObject)
+    public static IEnumerable<Visual> VisualTreeAncestory(this Visual dependencyObject)
     {
         if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
 

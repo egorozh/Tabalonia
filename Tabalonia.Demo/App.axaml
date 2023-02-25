@@ -4,7 +4,7 @@
              x:Class="Tabalonia.Demo.App">
     
     <Application.Styles>
-        <FluentTheme Mode="Dark"/>
+        <FluentTheme DensityStyle="Normal"/>
         <themes:FluentTheme Mode="Dark" />
     </Application.Styles>
     

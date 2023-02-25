@@ -8,7 +8,7 @@ using Avalonia.Styling;
 namespace TabaloniaNew.Themes;
 
 
-public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
+public class FluentTheme : Styles
 {
     private readonly Uri _baseUri;
     private Styles _fluentDark = new();
@@ -106,10 +106,7 @@ public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
             return _loaded!;
         }
     }
-
-    bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
-
-    IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
+    
 
     public event EventHandler? OwnerChanged
     {
@@ -128,22 +125,7 @@ public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
             }
         }
     }
-
-    public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
-
-    public bool TryGetResource(object key, out object? value)
-    {
-        if (!_isLoading && Loaded is IResourceProvider p)
-        {
-            return p.TryGetResource(key, out value);
-        }
-
-        value = null;
-        return false;
-    }
-
-    void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
-    void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
+    
 
     private void InitStyles(Uri baseUri)
     {
@@ -162,5 +144,7 @@ public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
                 Source = new Uri("avares://TabaloniaNew/Themes/FluentDark.axaml")
             }
         };
+        
+        Add(_fluentDark);
     }
 }
