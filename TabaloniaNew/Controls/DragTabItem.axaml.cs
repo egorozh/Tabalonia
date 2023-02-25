@@ -102,6 +102,42 @@ public class DragTabItem : TabItem
     }
 
     
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        base.OnPointerEntered(e);
+
+        _prevZindex = ZIndex;
+        ZIndex = int.MaxValue;
+    }
+    
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+
+        ZIndex = _prevZindex;
+    }
+
+    
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == IsSelectedProperty)
+        {
+            if (change.NewValue is true)
+            {
+                _prevZindex = ZIndex;
+                ZIndex = int.MaxValue;
+            }
+            else
+            {
+                ZIndex = _prevZindex;
+            }
+        }
+    }
+
+    
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
         RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args));
@@ -128,22 +164,5 @@ public class DragTabItem : TabItem
     {
         var args = new DragTabDragCompletedEventArgs(DragCompleted, this, e);
         RaiseEvent(args);
-    }
-    
-
-    protected override void OnPointerEntered(PointerEventArgs e)
-    {
-        base.OnPointerEntered(e);
-
-        _prevZindex = ZIndex;
-        ZIndex = int.MaxValue;
-    }
-    
-
-    protected override void OnPointerExited(PointerEventArgs e)
-    {
-        base.OnPointerExited(e);
-
-        ZIndex = _prevZindex;
     }
 }
