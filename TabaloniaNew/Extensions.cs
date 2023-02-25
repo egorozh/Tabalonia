@@ -1,9 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Primitives;
-using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 using TabaloniaNew.Exceptions;
 
 
@@ -22,30 +16,7 @@ internal static class Extensions
         return element;
     }
 
-    // public static IEnumerable<TContainer> Containers<TContainer>(this ItemContainerGenerator itemGen)
-    //     where TContainer : class
-    // {
-    //     foreach (ItemContainerInfo? info in itemGen.Containers)
-    //     {
-    //         if (info.ContainerControl is TContainer c)
-    //             yield return c;
-    //     }
-    // }
-
-    // public static TContainer? FindContainer<TContainer>(this ItemContainerGenerator itemGen, object? item)
-    //     where TContainer : class
-    // {
-    //     if (item == null)
-    //         return null;
-    //
-    //     var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
-    //
-    //     if (info is {ContainerControl: TContainer c})
-    //         return c;
-    //
-    //     return null;
-    // }
-
+    
     /// <summary>
     /// Yields the visual ancestory (including the starting point).
     /// </summary>

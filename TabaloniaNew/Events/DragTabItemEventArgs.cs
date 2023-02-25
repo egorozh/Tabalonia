@@ -1,4 +1,3 @@
-using Avalonia.Interactivity;
 using TabaloniaNew.Controls;
 
 

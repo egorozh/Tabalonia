@@ -1,7 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-
-
 namespace TabaloniaNew.Panels;
 
 

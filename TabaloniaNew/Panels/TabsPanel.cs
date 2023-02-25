@@ -1,10 +1,4 @@
 using static System.Math;
-
-using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
-using Avalonia.Controls;
-using Avalonia.Styling;
 using TabaloniaNew.Controls;
 
 
