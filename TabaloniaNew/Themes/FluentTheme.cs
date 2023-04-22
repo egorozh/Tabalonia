@@ -32,6 +32,7 @@ public class FluentTheme : Styles
         var ctx = serviceProvider.GetService(typeof(IUriContext)) as IUriContext
                   ?? throw new NullReferenceException("Unable retrive UriContext");
         _baseUri = ctx.BaseUri;
+        
         InitStyles(_baseUri);
     }
 
@@ -133,12 +134,13 @@ public class FluentTheme : Styles
                 Source = new Uri("avares://Tabalonia/Themes/FluentLight.axaml")
             }
         };
+        
 
         _fluentDark = new Styles
         {
             new StyleInclude(baseUri)
             {
-                Source = new Uri("avares://TabaloniaNew/Themes/FluentDark.axaml")
+                Source = new Uri(OperatingSystem.IsWindows() ? "avares://TabaloniaNew/Themes/FluentDark.Win.axaml" : "avares://TabaloniaNew/Themes/FluentDark.axaml")
             }
         };
         

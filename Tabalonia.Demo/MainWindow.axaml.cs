@@ -2,7 +2,11 @@ using Avalonia.Controls;
 
 namespace Tabalonia.Demo
 {
-    public class MainWindow : Window
+    public partial class MainWindow : Window
     {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
     }
 }
