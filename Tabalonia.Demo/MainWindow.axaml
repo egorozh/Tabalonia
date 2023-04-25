@@ -8,7 +8,7 @@
         x:Class="Tabalonia.Demo.MainWindow"
         Title="Tabalonia Demo">
     
-    <controls:TabsControl Items="{Binding TabItems}"
+    <controls:TabsControl ItemsSource="{Binding TabItems}"
                           NewItemFactory="{Binding NewItemFactory}">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">

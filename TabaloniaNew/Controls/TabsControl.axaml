@@ -49,7 +49,7 @@
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
 
-                    <Grid RowDefinitions="Auto *">
+                    <Grid RowDefinitions="Auto, *">
 
                         <panels:TopPanel Grid.Row="0"
                                          Name="PART_TopPanel"

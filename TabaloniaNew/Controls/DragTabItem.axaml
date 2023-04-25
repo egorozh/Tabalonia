@@ -49,7 +49,7 @@
 		<Setter Property="CornerRadius" Value="4 4 0 0" />
 		<Setter Property="Template">
 			<ControlTemplate>
-				<Grid ColumnDefinitions="Auto * Auto">
+				<Grid ColumnDefinitions="Auto, *, Auto">
 
 					<Path Fill="{TemplateBinding Background}"
                           Stretch="Uniform"
@@ -76,7 +76,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{TemplateBinding Padding}">
-						<Grid ColumnDefinitions="* Auto">
+						<Grid ColumnDefinitions="*, Auto">
 
 							<ContentPresenter Name="PART_ContentPresenter"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
