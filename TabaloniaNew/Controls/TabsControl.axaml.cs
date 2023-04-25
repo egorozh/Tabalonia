@@ -143,7 +143,7 @@ public class TabsControl : TabControl
         if (item == null)
             return;
         
-        if (Items is not IList itemsList)
+        if (ItemsSource is not IList itemsList)
             return;
         
         int removedItemIndex = itemsList.IndexOf(item);
@@ -267,7 +267,7 @@ public class TabsControl : TabControl
         {
             DragTabItem container = _draggedItem;
         
-            if (Items is IList list)
+            if (ItemsSource is IList list)
             {
                 if (container.LogicalIndex != list.IndexOf(item))
                 {
