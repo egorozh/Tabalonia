@@ -125,12 +125,9 @@ public class TabsControl : TabControl
     }
 
     
-    protected override Control CreateContainerForItemOverride() => new DragTabItem();
+    protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) => new DragTabItem();
     
     
-    protected override bool IsItemItsOwnContainerOverride(Control item) => item is DragTabItem;
-
-        
     #endregion
         
         
