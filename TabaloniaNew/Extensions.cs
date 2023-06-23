@@ -1,0 +1,73 @@
+using TabaloniaNew.Exceptions;
+
+
+namespace TabaloniaNew;
+
+
+internal static class Extensions
+{
+    public static T Find<T>(this TemplateAppliedEventArgs e, string elementName) where T : class
+    {
+        var element = e.NameScope.Find<T>(elementName);
+
+        if (element == null)
+            throw new ElementNotFoundOnStyleException(elementName);
+
+        return element;
+    }
+
+    
+    /// <summary>
+    /// Yields the visual ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<Visual> VisualTreeAncestory(this Visual dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetVisualParent();
+        }
+    }
+
+    /// <summary>
+    /// Yields the logical ancestory (including the starting point).
+    /// </summary>
+    /// <param name="dependencyObject"></param>
+    /// <returns></returns>
+    public static IEnumerable<ILogical> LogicalTreeAncestory(this ILogical dependencyObject)
+    {
+        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+
+        while (dependencyObject != null)
+        {
+            yield return dependencyObject;
+            dependencyObject = dependencyObject.GetLogicalParent();
+        }
+    }
+
+
+    public static void RestoreWindow(this Window? window)
+    {
+        if (window is null)
+            return;
+
+        window.WindowState = WindowState.Maximized;
+    }
+
+
+    public static void DragWindow(this Window? window, double vectorX, double vectorY)
+    {
+        if (window is null)
+            return;
+
+        var pos = window.Position;
+        
+        window.Position = new PixelPoint(
+            x: (int) (pos.X + vectorX),
+            y: (int) (pos.Y + vectorY));
+    }
+}

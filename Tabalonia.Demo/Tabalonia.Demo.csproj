@@ -1,21 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\**" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="0.10.17" />
-		<PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.17" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
-		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Tabalonia\Tabalonia.csproj" />
-	</ItemGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.0-preview7" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview7" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview7" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview7" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview7" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\TabaloniaNew\TabaloniaNew.csproj" />
+    </ItemGroup>
 </Project>

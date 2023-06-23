@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:TabaloniaNew.Controls;assembly=TabaloniaNew"
+        xmlns:dragablzDemo="clr-namespace:Tabalonia.Demo.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Tabalonia.Demo.MainWindow"
+        Title="Tabalonia Demo">
+    
+    <controls:TabsControl ItemsSource="{Binding TabItems}"
+                          NewItemFactory="{Binding NewItemFactory}">
+        <TabControl.ContentTemplate>
+            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+                <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
+                    <TextBlock Text="{Binding SimpleContent}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Grid>
+
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+        <TabControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+                <TextBlock Text="{Binding Header}" />
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+    </controls:TabsControl>
+</Window>

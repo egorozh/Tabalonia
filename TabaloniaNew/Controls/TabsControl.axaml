@@ -1,0 +1,89 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:TabaloniaNew.Controls"
+                    xmlns:panels="clr-namespace:TabaloniaNew.Panels">
+
+    <Design.PreviewWith>
+        <Border Width="400">
+            <TabControl>
+                <TabItem Header="Arch">
+                    <Border Background="AntiqueWhite" Height="100">
+                        <TextBlock Text="Content" Foreground="Black" FontSize="20" />
+                    </Border>
+                </TabItem>
+                <TabItem Header="Leaf">
+                    <Border Background="Green" Height="100" />
+                </TabItem>
+                <TabItem Header="Disabled" IsEnabled="False" />
+            </TabControl>
+        </Border>
+    </Design.PreviewWith>
+    
+    <ControlTheme x:Key="WindowThumbStyle" TargetType="Thumb">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+    
+    <ControlTheme x:Key="{x:Type controls:TabsControl}" TargetType="controls:TabsControl">
+        
+        <Setter Property="Background" Value="{DynamicResource TabControlWindowActiveBackgroundBrush}" />
+        <Setter Property="Margin" Value="0 0 0 2" />
+        
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}">
+
+                    <Grid RowDefinitions="Auto, *">
+
+                        <panels:TopPanel Grid.Row="0"
+                                         Name="PART_TopPanel"
+                                         Background="{TemplateBinding Background}"
+                                         HorizontalAlignment="Stretch">
+                            
+                            <Thumb Name="PART_LeftDragWindowThumb"
+                                   MinWidth="80"
+                                   Theme="{StaticResource WindowThumbStyle}"/>
+                            
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+
+                            <Button Classes="AddItemCommandButtonStyle" 
+                                    Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
+
+                            <Thumb Name="PART_RightDragWindowThumb"
+                                   MinWidth="50"
+                                   Theme="{StaticResource WindowThumbStyle}"/>
+
+                        </panels:TopPanel>
+
+                        <ContentPresenter Grid.Row="1"
+                                          Name="PART_SelectedContentHost"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        
+    </ControlTheme>
+
+</ResourceDictionary>
