@@ -268,7 +268,7 @@ public class TabsPanel : Panel
             }
         };
             
-        await animation.RunAsync(item, null);
+        await animation.RunAsync(item);
 
         SetLocation(item, location, width);
             
