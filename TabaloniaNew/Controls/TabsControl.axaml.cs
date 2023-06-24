@@ -100,7 +100,7 @@ public class TabsControl : TabControl
         if (newItem == null) 
             throw new ApplicationException("NewItemFactory is null or returned null.");
 
-        if (Items is IList itemsList)
+        if (ItemsSource is IList itemsList)
             itemsList.Add(newItem);
             
         SelectedItem = newItem;
