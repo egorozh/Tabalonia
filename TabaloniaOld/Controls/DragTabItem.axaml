@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:TabaloniaNew.Controls"
-        xmlns:converters="clr-namespace:TabaloniaNew.Converters">
+        xmlns:local="clr-namespace:Tabalonia.Controls"
+        xmlns:converters="clr-namespace:Tabalonia.Converters">
 
 	<Design.PreviewWith>
 		<Border Padding="20">
@@ -37,6 +37,8 @@
     </Style>
 
 	<Style Selector="local|DragTabItem">
+        <Setter Property="Canvas.Left" Value="{Binding $self.X}" />
+        <Setter Property="Canvas.Top" Value="{Binding $self.Y}" />
 		<Setter Property="FontSize" Value="12" />
 		<Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
 		<Setter Property="Background" Value="{DynamicResource TabItemBackgroundBrush}" />
@@ -45,11 +47,12 @@
 		<Setter Property="Margin" Value="0" />
 	    <Setter Property="MinHeight" Value="32" />
 		<Setter Property="Height" Value="32" />
+		<Setter Property="Width" Value="220" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="CornerRadius" Value="4 4 0 0" />
 		<Setter Property="Template">
 			<ControlTemplate>
-				<Grid ColumnDefinitions="Auto, *, Auto">
+				<Grid ColumnDefinitions="Auto * Auto">
 
 					<Path Fill="{TemplateBinding Background}"
                           Stretch="Uniform"
@@ -76,7 +79,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{TemplateBinding Padding}">
-						<Grid ColumnDefinitions="*, Auto">
+						<Grid ColumnDefinitions="* Auto">
 
 							<ContentPresenter Name="PART_ContentPresenter"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
@@ -99,6 +102,7 @@
                                 <Button.IsVisible>
                                     <MultiBinding Converter="{StaticResource ShowDefaultCloseButtonConverter}">
                                         <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}" Path="ShowDefaultCloseButton" />
+                                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}" Path="FixedHeaderCount" />
                                         <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="LogicalIndex" />
                                     </MultiBinding>
                                 </Button.IsVisible>

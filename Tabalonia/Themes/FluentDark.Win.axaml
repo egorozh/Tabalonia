@@ -18,6 +18,6 @@
        
 	</Styles.Resources> 
 
-	<StyleInclude Source="avares://TabaloniaNew/Themes/Controls.axaml" />
+	<StyleInclude Source="avares://Tabalonia/Themes/Controls.Win.axaml" />
 	
 </Styles>

@@ -1,8 +1,11 @@
-using TabaloniaNew.Exceptions;
+using Avalonia.Controls;
+using Avalonia.Controls.Generators;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+using Tabalonia.Exceptions;
 
-
-namespace TabaloniaNew;
-
+namespace Tabalonia;
 
 internal static class Extensions
 {
@@ -15,14 +18,37 @@ internal static class Extensions
 
         return element;
     }
-
     
+    public static IEnumerable<TContainer> Containers<TContainer>(this IItemContainerGenerator itemGen)
+        where TContainer : class
+    {
+        foreach (ItemContainerInfo? info in itemGen.Containers)
+        {
+            if (info.ContainerControl is TContainer c)
+                yield return c;
+        }
+    }
+
+    public static TContainer? FindContainer<TContainer>(this IItemContainerGenerator itemGen, object? item)
+        where TContainer : class
+    {
+        if (item == null)
+            return null;
+
+        var info = itemGen.Containers.FirstOrDefault(i => i.Item == item);
+
+        if (info is {ContainerControl: TContainer c})
+            return c;
+
+        return null;
+    }
+
     /// <summary>
     /// Yields the visual ancestory (including the starting point).
     /// </summary>
     /// <param name="dependencyObject"></param>
     /// <returns></returns>
-    public static IEnumerable<Visual> VisualTreeAncestory(this Visual dependencyObject)
+    public static IEnumerable<IVisual> VisualTreeAncestory(this IVisual dependencyObject)
     {
         if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
 
@@ -47,27 +73,5 @@ internal static class Extensions
             yield return dependencyObject;
             dependencyObject = dependencyObject.GetLogicalParent();
         }
-    }
-
-
-    public static void RestoreWindow(this Window? window)
-    {
-        if (window is null)
-            return;
-
-        window.WindowState = WindowState.Maximized;
-    }
-
-
-    public static void DragWindow(this Window? window, double vectorX, double vectorY)
-    {
-        if (window is null)
-            return;
-
-        var pos = window.Position;
-        
-        window.Position = new PixelPoint(
-            x: (int) (pos.X + vectorX),
-            y: (int) (pos.Y + vectorY));
     }
 }

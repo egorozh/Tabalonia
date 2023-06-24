@@ -1,4 +1,4 @@
-namespace TabaloniaNew.Panels;
+namespace Tabalonia.Panels;
 
 
 public class TopPanel : StackPanel

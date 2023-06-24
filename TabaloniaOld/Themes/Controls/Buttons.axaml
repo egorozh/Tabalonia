@@ -53,7 +53,7 @@
 				<Border x:Name="border"
                         Height="28"
                         Width="28"
-                        CornerRadius="1"
+                        CornerRadius="14"
                         Background="{TemplateBinding Background}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         BorderBrush="{TemplateBinding BorderBrush}">
@@ -72,8 +72,8 @@
     </Style>
 
     <Style Selector="Button.AddItemCommandButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#EAE8E7" />
-        <Setter Property="Background" Value="#464546" />
+        <Setter Property="Foreground" Value="#1A1A1A" />
+        <Setter Property="Background" Value="#292929" />
     </Style>
 
     <Style Selector="Window[IsActive=false] Button.AddItemCommandButtonStyle">

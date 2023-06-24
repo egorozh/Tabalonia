@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalonia", "Tabalonia\Tabalonia.csproj", "{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabaloniaOld", "TabaloniaOld\TabaloniaOld.csproj", "{7A0201CB-738C-4BB4-BB70-28D4C0740DAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabaloniaNew", "TabaloniaNew\TabaloniaNew.csproj", "{826BDEE3-EA4C-4308-899D-C27897BABDE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalonia", "Tabalonia\Tabalonia.csproj", "{826BDEE3-EA4C-4308-899D-C27897BABDE9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabalonia.Demo", "Tabalonia.Demo\Tabalonia.Demo.csproj", "{3417F278-A4B9-4AF6-8014-FF80F4F99969}"
 EndProject

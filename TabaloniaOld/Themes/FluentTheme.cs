@@ -1,11 +1,12 @@
-﻿using Avalonia.Markup.Xaml;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Styling;
 
+namespace Tabalonia.Themes;
 
-namespace TabaloniaNew.Themes;
-
-
-public class FluentTheme : Styles
+public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
 {
     private readonly Uri _baseUri;
     private Styles _fluentDark = new();
@@ -32,7 +33,6 @@ public class FluentTheme : Styles
         var ctx = serviceProvider.GetService(typeof(IUriContext)) as IUriContext
                   ?? throw new NullReferenceException("Unable retrive UriContext");
         _baseUri = ctx.BaseUri;
-        
         InitStyles(_baseUri);
     }
 
@@ -104,7 +104,10 @@ public class FluentTheme : Styles
             return _loaded!;
         }
     }
-    
+
+    bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
+
+    IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
 
     public event EventHandler? OwnerChanged
     {
@@ -123,7 +126,22 @@ public class FluentTheme : Styles
             }
         }
     }
-    
+
+    public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
+
+    public bool TryGetResource(object key, out object? value)
+    {
+        if (!_isLoading && Loaded is IResourceProvider p)
+        {
+            return p.TryGetResource(key, out value);
+        }
+
+        value = null;
+        return false;
+    }
+
+    void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
+    void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
 
     private void InitStyles(Uri baseUri)
     {
@@ -131,19 +149,16 @@ public class FluentTheme : Styles
         {
             new StyleInclude(baseUri)
             {
-                Source = new Uri("avares://Tabalonia/Themes/FluentLight.axaml")
+                Source = new Uri("avares://TabaloniaOld/Themes/FluentLight.axaml")
             }
         };
-        
 
         _fluentDark = new Styles
         {
             new StyleInclude(baseUri)
             {
-                Source = new Uri(OperatingSystem.IsWindows() ? "avares://TabaloniaNew/Themes/FluentDark.Win.axaml" : "avares://TabaloniaNew/Themes/FluentDark.axaml")
+                Source = new Uri("avares://TabaloniaOld/Themes/FluentDark.axaml")
             }
         };
-        
-        Add(_fluentDark);
     }
 }

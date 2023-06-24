@@ -1,5 +1,4 @@
-﻿namespace TabaloniaNew.Exceptions;
-
+﻿namespace Tabalonia.Exceptions;
 
 public class ElementNotFoundOnStyleException : Exception
 {

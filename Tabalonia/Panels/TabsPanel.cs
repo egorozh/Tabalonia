@@ -1,8 +1,8 @@
+using Tabalonia.Controls;
 using static System.Math;
-using TabaloniaNew.Controls;
 
 
-namespace TabaloniaNew.Panels;
+namespace Tabalonia.Panels;
 
 
 public class TabsPanel : Panel

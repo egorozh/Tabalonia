@@ -2,9 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Styles.Resources>
-        <SolidColorBrush x:Key="TabControlWindowActiveBackgroundBrush" Color="#202020" />
-        <SolidColorBrush x:Key="TabControlWindowInactiveBackgroundBrush" Color="#2F2F2F" />
-        
         <SolidColorBrush x:Key="TabItemBackgroundBrush" Color="#202020" />
         <SolidColorBrush x:Key="TabItemBackgroundBrushWindowInactive" Color="#2E2E2E" />
 
@@ -18,6 +15,6 @@
        
 	</Styles.Resources> 
 
-	<StyleInclude Source="avares://TabaloniaNew/Themes/Controls.Win.axaml" />
+	<StyleInclude Source="avares://TabaloniaOld/Themes/Controls.axaml" />
 	
 </Styles>

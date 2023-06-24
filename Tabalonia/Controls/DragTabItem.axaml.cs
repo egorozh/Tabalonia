@@ -1,29 +1,21 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Tabalonia.Events;
 
 namespace Tabalonia.Controls;
+
 
 public class DragTabItem : TabItem
 {
     #region Private Fields
 
     private Thumb _thumb;
+    
+    private int _prevZindex;
     private int _logicalIndex;
     private bool _isDragging;
     private bool _isSiblingDragging;
 
     #endregion
     
-    #region Internal Properties
-
-    internal Point MouseAtDragStart { get; set; }
-
-    #endregion
-
     #region Avalonia Properties
 
     public static readonly StyledProperty<double> XProperty =
@@ -82,26 +74,20 @@ public class DragTabItem : TabItem
 
     #region Routed Events
 
-    public static readonly RoutedEvent<DragablzDragStartedEventArgs> DragStarted =
-        RoutedEvent.Register<DragTabItem, DragablzDragStartedEventArgs>("DragStarted", RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<DragTabDragStartedEventArgs> DragStarted =
+        RoutedEvent.Register<DragTabItem, DragTabDragStartedEventArgs>("DragStarted", RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<DragablzDragDeltaEventArgs> DragDelta =
-        RoutedEvent.Register<DragTabItem, DragablzDragDeltaEventArgs>("DragDelta", RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<DragTabDragDeltaEventArgs> DragDelta =
+        RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("DragDelta", RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<DragablzDragCompletedEventArgs> DragCompleted =
-        RoutedEvent.Register<DragTabItem, DragablzDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
+    public static readonly RoutedEvent<DragTabDragCompletedEventArgs> DragCompleted =
+        RoutedEvent.Register<DragTabItem, DragTabDragCompletedEventArgs>("DragCompleted", RoutingStrategies.Bubble);
 
-    public static readonly RoutedEvent<DragablzDragDeltaEventArgs> PreviewDragDelta =
-        RoutedEvent.Register<DragTabItem, DragablzDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel);
-
-    private int _prevZindex;
-
-    #endregion
-
-    #region Events
-
-    #endregion
+    public static readonly RoutedEvent<DragTabDragDeltaEventArgs> PreviewDragDelta =
+        RoutedEvent.Register<DragTabItem, DragTabDragDeltaEventArgs>("PreviewDragDelta", RoutingStrategies.Tunnel);
     
+    #endregion
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -114,50 +100,7 @@ public class DragTabItem : TabItem
         _thumb.DragCompleted += ThumbOnDragCompleted;
     }
 
-    private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
-    {
-        //MouseAtDragStart = new MouseDevice().GetPosition(this);
-        RaiseEvent(new DragablzDragStartedEventArgs(DragStarted, this, args));
-    }
-
-    private void ThumbOnDragDelta(object? sender, VectorEventArgs e)
-    {
-        var previewEventArgs = new DragablzDragDeltaEventArgs(PreviewDragDelta, this, e);
-        RaiseEvent(previewEventArgs);
-        //if (previewEventArgs.Cancel)
-        //    thumb.CancelDrag();
-        if (!previewEventArgs.Handled)
-        {
-            var eventArgs = new DragablzDragDeltaEventArgs(DragDelta, this, e);
-            RaiseEvent(eventArgs);
-            //if (eventArgs.Cancel)
-            //    thumb.CancelDrag();
-        }
-    }
-
-    private void ThumbOnDragCompleted(object? sender, VectorEventArgs e)
-    {
-       
-        var args = new DragablzDragCompletedEventArgs(DragCompleted, this, e);
-        RaiseEvent(args);
-        MouseAtDragStart = new Point();
-    }
-
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-    }
-
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-    }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-    }
-
+    
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
@@ -165,11 +108,60 @@ public class DragTabItem : TabItem
         _prevZindex = ZIndex;
         ZIndex = int.MaxValue;
     }
+    
 
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
 
         ZIndex = _prevZindex;
+    }
+
+    
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == IsSelectedProperty)
+        {
+            if (change.NewValue is true)
+            {
+                _prevZindex = ZIndex;
+                ZIndex = int.MaxValue;
+            }
+            else
+            {
+                ZIndex = _prevZindex;
+            }
+        }
+    }
+
+    
+    private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
+    {
+        RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args));
+    }
+
+    
+    private void ThumbOnDragDelta(object? sender, VectorEventArgs e)
+    {
+        var previewEventArgs = new DragTabDragDeltaEventArgs(PreviewDragDelta, this, e);
+        RaiseEvent(previewEventArgs);
+        // if (previewEventArgs.Cancel)
+        //     _thumb.CancelDrag();
+        if (!previewEventArgs.Handled)
+        {
+            var eventArgs = new DragTabDragDeltaEventArgs(DragDelta, this, e);
+            RaiseEvent(eventArgs);
+            //if (eventArgs.Cancel)
+            //    thumb.CancelDrag();
+        }
+    }
+
+    
+    private void ThumbOnDragCompleted(object? sender, VectorEventArgs e)
+    {
+        var args = new DragTabDragCompletedEventArgs(DragCompleted, this, e);
+        RaiseEvent(args);
     }
 }

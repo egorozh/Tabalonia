@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="using:TabaloniaNew.Controls"
-                    xmlns:panels="clr-namespace:TabaloniaNew.Panels">
+                    xmlns:controls="clr-namespace:Tabalonia.Controls"
+                    xmlns:panels="clr-namespace:Tabalonia.Panels">
 
     <Design.PreviewWith>
         <Border Width="400">
@@ -57,7 +57,7 @@
                                          HorizontalAlignment="Stretch">
                             
                             <Thumb Name="PART_LeftDragWindowThumb"
-                                   MinWidth="80"
+                                   MinWidth="4"
                                    Theme="{StaticResource WindowThumbStyle}"/>
                             
                             <ItemsPresenter Name="PART_ItemsPresenter"
@@ -67,7 +67,7 @@
                                     Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
-                                   MinWidth="50"
+                                   MinWidth="160"
                                    Theme="{StaticResource WindowThumbStyle}"/>
 
                         </panels:TopPanel>

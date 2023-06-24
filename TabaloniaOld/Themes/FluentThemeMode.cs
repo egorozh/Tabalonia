@@ -1,5 +1,4 @@
-﻿namespace TabaloniaNew.Themes;
-
+﻿namespace Tabalonia.Themes;
 
 public enum FluentThemeMode
 {

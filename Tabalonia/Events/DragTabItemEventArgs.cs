@@ -1,7 +1,6 @@
-using TabaloniaNew.Controls;
+using Tabalonia.Controls;
 
-
-namespace TabaloniaNew.Events;
+namespace Tabalonia.Events;
 
 
 public abstract class DragTabItemEventArgs : RoutedEventArgs

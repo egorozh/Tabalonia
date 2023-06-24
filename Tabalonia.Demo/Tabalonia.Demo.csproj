@@ -19,6 +19,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\TabaloniaNew\TabaloniaNew.csproj" />
+        <ProjectReference Include="..\Tabalonia\Tabalonia.csproj" />
     </ItemGroup>
 </Project>

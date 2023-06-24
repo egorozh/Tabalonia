@@ -1,0 +1,81 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Tabalonia.Controls"
+        xmlns:converters="clr-namespace:Tabalonia.Converters">
+
+    <Design.PreviewWith>
+        <Border Width="400">
+            <controls:TabsControl>
+                <TabItem Header="Arch">
+                    <Border Background="AntiqueWhite"
+                            Height="100">
+                        <TextBlock Text="Content" Foreground="Black" FontSize="20" />
+                    </Border>
+                </TabItem>
+                <TabItem Header="Leaf">
+                    <Border Background="Green"
+                            Height="100" />
+                </TabItem>
+                <TabItem Header="Disabled"
+                         IsEnabled="False" />
+            </controls:TabsControl>
+        </Border>
+    </Design.PreviewWith>
+
+    <Styles.Resources>
+        <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
+    </Styles.Resources>
+
+    <Style Selector="controls|TabsControl">
+        <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
+        <Setter Property="AddButtonTemplate">
+            <Template>
+                <Button Classes="AddItemCommandButtonStyle"
+                        Command="{Binding $parent[controls:TabsControl].AddItem}"
+                        IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
+			</Template>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate TargetType="controls:TabsControl">
+				<Border BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}">
+					<Grid RowDefinitions="Auto *">
+                        <controls:TabsItemsPresenter Name="PART_ItemsPresenter"
+                                                     HorizontalAlignment="Stretch"
+                                                     Items="{TemplateBinding Items}"
+                                                     ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                     ItemTemplate="{TemplateBinding ItemTemplate}">
+                        </controls:TabsItemsPresenter>
+                        
+                        <ContentPresenter Grid.Row="1" 
+                                          Name="PART_SelectedContentHost"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style
+        Selector="controls|TabsControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+    </Style>
+
+    <Style
+        Selector="controls|TabsControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+    </Style>
+
+    <Style Selector="controls|TabsControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="{DynamicResource TabControlTopPlacementItemMargin}" />
+    </Style>
+
+</Styles>
