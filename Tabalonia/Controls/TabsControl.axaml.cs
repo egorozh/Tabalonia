@@ -34,6 +34,10 @@ public class TabsControl : TabControl
         
     public static readonly StyledProperty<Func<object>?> NewItemFactoryProperty =
         AvaloniaProperty.Register<TabsControl, Func<object>?>(nameof(NewItemFactory));
+    
+    
+    public static readonly StyledProperty<Action?> TabClosedActionProperty =
+        AvaloniaProperty.Register<TabsControl, Action?>(nameof(LastTabClosedAction));
         
     #endregion
 
@@ -53,6 +57,8 @@ public class TabsControl : TabControl
         };
             
         ItemsPanel = new FuncTemplate<Panel>(() => _tabsPanel);
+
+        LastTabClosedAction = () => GetThisWindow()?.Close();
     }
 
     #endregion
@@ -72,7 +78,14 @@ public class TabsControl : TabControl
         get => GetValue(NewItemFactoryProperty);
         set => SetValue(NewItemFactoryProperty, value);
     }
-        
+    
+    
+    public Action? LastTabClosedAction
+    {
+        get => GetValue(TabClosedActionProperty);
+        set => SetValue(TabClosedActionProperty, value);
+    }
+
     #endregion
         
         
@@ -148,12 +161,12 @@ public class TabsControl : TabControl
         itemsList.Remove(item);
         
         if (itemsList.Count == 0)
-            GetThisWindow()?.Close();
+            LastTabClosedAction?.Invoke();
         else if (removedItemIsSelected) 
             SetSelectedNewTab(itemsList, removedItemIndex);
     }
-
-        
+    
+    
     private void SetSelectedNewTab(IList items, int removedItemIndex) =>
         SelectedItem = removedItemIndex == items.Count ? items[^1] : items[removedItemIndex];
 

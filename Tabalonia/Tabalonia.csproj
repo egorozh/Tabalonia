@@ -4,10 +4,15 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <Version>0.9.0</Version>
+
+        <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/egorozh/Tabalonia</RepositoryUrl>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.0.0-rc1.1" />
+        <PackageReference Include="Avalonia" Version="11.0.0" />
     </ItemGroup>
 
 </Project>
