@@ -7,7 +7,7 @@ public class DragTabItem : TabItem
 {
     #region Private Fields
 
-    private Thumb _thumb;
+    private LeftPressedThumb _thumb;
     
     private int _prevZindex;
     private int _logicalIndex;
@@ -92,7 +92,7 @@ public class DragTabItem : TabItem
     {
         base.OnApplyTemplate(e);
 
-        var templateThumb = e.Find<Thumb>("PART_Thumb");
+        var templateThumb = e.Find<LeftPressedThumb>("PART_Thumb");
 
         _thumb = templateThumb;
         _thumb.DragStarted += ThumbOnDragStarted;
