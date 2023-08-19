@@ -13,7 +13,7 @@ This is a port of the [Draggablz](https://github.com/ButchersBoy/Dragablz)
 Install the library as a NuGet package:
 
 ```powershell
-Install-Package Egorozh.ColorPicker.Avalonia.Dialog
+Install-Package Tabalonia
 # Or 'dotnet add package Tabalonia'
 ```
 
