@@ -136,7 +136,13 @@ public class DragTabItem : TabItem
         }
     }
 
-    
+
+    public override string ToString()
+    {
+        return $"{nameof(DragTabItem)}.{nameof(Header)}:{Header}";
+    }
+
+
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
         RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args));

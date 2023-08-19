@@ -17,14 +17,7 @@ public class LeftPressedThumb : TemplatedControl
 
     
     private Point? _lastPoint;
-
     
-    static LeftPressedThumb()
-    {
-        DragStartedEvent.AddClassHandler<LeftPressedThumb>((x, e) => x.OnDragStarted(e), RoutingStrategies.Bubble);
-        DragDeltaEvent.AddClassHandler<LeftPressedThumb>((x, e) => x.OnDragDelta(e), RoutingStrategies.Bubble);
-        DragCompletedEvent.AddClassHandler<LeftPressedThumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
-    }
 
     public event EventHandler<VectorEventArgs>? DragStarted
     {
@@ -48,18 +41,6 @@ public class LeftPressedThumb : TemplatedControl
     protected override AutomationPeer OnCreateAutomationPeer() => new LeftPressedThumbPeer(this);
 
     
-    protected virtual void OnDragStarted(VectorEventArgs e)
-    {
-    }
-
-    protected virtual void OnDragDelta(VectorEventArgs e)
-    {
-    }
-
-    protected virtual void OnDragCompleted(VectorEventArgs e)
-    {
-    }
-
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         if (_lastPoint.HasValue)
@@ -128,7 +109,7 @@ public class LeftPressedThumb : TemplatedControl
             var ev = new VectorEventArgs
             {
                 RoutedEvent = DragCompletedEvent,
-                Vector = (Vector)e.GetPosition(this),
+                Vector = e.GetPosition(this),
             };
 
             RaiseEvent(ev);

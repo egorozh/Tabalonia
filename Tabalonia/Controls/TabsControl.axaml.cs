@@ -2,6 +2,7 @@ using System.Collections;
 using Tabalonia.Events;
 using Tabalonia.Panels;
 
+
 namespace Tabalonia.Controls;
 
 
@@ -30,6 +31,10 @@ public class TabsControl : TabControl
         
     public static readonly StyledProperty<bool> ShowDefaultCloseButtonProperty =
         AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton), defaultValue: true);
+    
+    
+    public static readonly StyledProperty<int> FixedHeaderCountProperty =
+        AvaloniaProperty.Register<TabsControl, int>(nameof(FixedHeaderCount), defaultValue: 0);
        
         
     public static readonly StyledProperty<Func<object>?> NewItemFactoryProperty =
@@ -50,17 +55,19 @@ public class TabsControl : TabControl
         AddHandler(DragTabItem.DragDelta, ItemDragDelta);
         AddHandler(DragTabItem.DragCompleted, ItemDragCompleted, handledEventsToo: true);
 
-        _tabsPanel = new TabsPanel
+        _tabsPanel = new TabsPanel(this)
         {
             ItemWidth = DefaultTabWidth,
             ItemOffset = DefaultTabOffset
         };
+        
+        _tabsPanel.DragCompleted += TabsPanelOnDragCompleted;
             
         ItemsPanel = new FuncTemplate<Panel>(() => _tabsPanel);
 
         LastTabClosedAction = (_,_) => GetThisWindow()?.Close();
     }
-
+    
     #endregion
         
         
@@ -84,6 +91,16 @@ public class TabsControl : TabControl
     {
         get => GetValue(LastTabClosedActionProperty);
         set => SetValue(LastTabClosedActionProperty, value);
+    }
+    
+    
+    /// <summary>
+    /// Allows a the first adjacent tabs to be fixed (no dragging, and default close button will not show).
+    /// </summary>
+    public int FixedHeaderCount
+    {
+        get => GetValue(FixedHeaderCountProperty);
+        set => SetValue(FixedHeaderCountProperty, value);
     }
 
     #endregion
@@ -211,6 +228,12 @@ public class TabsControl : TabControl
         if (_draggedItem is null)
             throw new Exception($"{nameof(TabsControl)}.{nameof(ItemDragDelta)} - _draggedItem is null");
 
+        if (_draggedItem.LogicalIndex < FixedHeaderCount)
+        {
+            e.Handled = true;
+            return;
+        }
+        
         if (!_dragging)
         {
             _dragging = true;
@@ -236,9 +259,7 @@ public class TabsControl : TabControl
             item.IsDragging = false;
             item.IsSiblingDragging = false;
         }
-            
-        _tabsPanel.LayoutUpdated += TabsPanelOnLayoutUpdated;
-            
+        
         Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
             
         _dragging = false;
@@ -256,18 +277,16 @@ public class TabsControl : TabControl
         draggedItem.IsDragging = true;
         draggedItem.IsSiblingDragging = false;
     }
-        
-        
-    private void TabsPanelOnLayoutUpdated(object? sender, EventArgs e)
+    
+
+    private void TabsPanelOnDragCompleted()
     {
-        _tabsPanel.LayoutUpdated -= TabsPanelOnLayoutUpdated;
-            
         MoveTabModelsIfNeeded();
 
         _draggedItem = null;
     }
 
-
+    
     private void MoveTabModelsIfNeeded()
     {
         object? item = ItemFromContainer(_draggedItem);

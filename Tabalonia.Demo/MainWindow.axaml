@@ -9,7 +9,8 @@
         Title="TabaloniaOld Demo">
     
     <controls:TabsControl ItemsSource="{Binding TabItems}"
-                          NewItemFactory="{Binding NewItemFactory}">
+                          NewItemFactory="{Binding NewItemFactory}"
+                          FixedHeaderCount="1">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">

@@ -7,23 +7,38 @@ namespace Tabalonia.Panels;
 
 public class TabsPanel : Panel
 {
+    #region Private Fields
+    
+    private readonly TabsControl _tabsControl;
+    
     private readonly Dictionary<DragTabItem, LocationInfo> _itemsLocations = new();
     private double _itemWidth;
     private readonly Dictionary<DragTabItem, double> _activeStoryboardTargetLocations = new();
     private DragTabItem? _dragItem;
-        
+    
+    #endregion
+
+
+    public event Action? DragCompleted;
+    
+    
+    public TabsPanel(TabsControl tabsControl) => _tabsControl = tabsControl;
+
+
+    #region Public Properties
 
     public double ItemWidth { get; internal set; }
 
     public double ItemOffset { get; internal set; }
     
+    #endregion
 
+    
+    #region Protected Methods
+    
     protected override Size MeasureOverride(Size availableSize)
     {
-        var draggedItem = (DragTabItem?) Children.FirstOrDefault(c => c is DragTabItem
-        {
-            IsDragging: true
-        });
+        var draggedItem = GetDragItem();
 
         return draggedItem is not null 
             ? DragMeasureImpl(draggedItem, availableSize) 
@@ -33,10 +48,7 @@ public class TabsPanel : Panel
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var draggedItem = (DragTabItem?) Children.FirstOrDefault(c => c is DragTabItem
-        {
-            IsDragging: true
-        });
+        var draggedItem = GetDragItem();
             
         if (_dragItem is not null && draggedItem is null)
         {
@@ -53,7 +65,9 @@ public class TabsPanel : Panel
             : ArrangeImpl(finalSize);
     }
         
-
+    #endregion
+    
+    
     private Size MeasureImpl(Size availableSize)
     {
         _itemWidth = GetAvailableWidth(availableSize);
@@ -111,6 +125,7 @@ public class TabsPanel : Panel
     {
         double x = 0;
         int z = int.MaxValue;
+        int logicalIndex = 0;
 
         _itemsLocations.Clear();
             
@@ -120,7 +135,8 @@ public class TabsPanel : Panel
                 continue;
 
             tabItem.ZIndex = tabItem.IsSelected ? int.MaxValue : --z;
-                
+            tabItem.LogicalIndex = logicalIndex++;
+            
             SetLocation(tabItem, x, _itemWidth);
                 
             _itemsLocations.Add(tabItem, GetLocationInfo(tabItem));
@@ -144,7 +160,7 @@ public class TabsPanel : Panel
         {
             var item = location.Item;
 
-            if (!Equals(item, dragItem))
+            if (!Equals(item, dragItem) && item.LogicalIndex >= _tabsControl.FixedHeaderCount)
             {
                 SendToLocation(item, currentCoord, _itemWidth);
                 item.ZIndex = --zIndex;
@@ -155,7 +171,7 @@ public class TabsPanel : Panel
 
                 if (dragItem.X > maxX) dragItem.X = maxX;
 
-                const double minX = 0;
+                double minX = CalculateMinX();
 
                 if (dragItem.X < minX) dragItem.X = minX;
 
@@ -169,8 +185,24 @@ public class TabsPanel : Panel
             
         return finalSize;
     }
+    
 
+    private double CalculateMinX()
+    {
+        if (_tabsControl.FixedHeaderCount < 1)
+            return 0;
         
+        double x = 0;
+
+        for (int index = 0; index < _tabsControl.FixedHeaderCount; index++)
+        {
+            x += _itemWidth + ItemOffset;
+        }
+
+        return x;
+    }
+
+
     private Size DragCompletedArrangeImpl(DragTabItem dragItem, Size finalSize)
     {
         var dragItemsLocations = GetLocations(Children.OfType<DragTabItem>(), dragItem);
@@ -190,6 +222,8 @@ public class TabsPanel : Panel
         }
 
         dragItem.ZIndex = int.MaxValue;
+        
+        DragCompleted?.Invoke();
             
         return finalSize;
     }
@@ -299,8 +333,14 @@ public class TabsPanel : Panel
 
         return new LocationInfo(item, startLocation, midLocation, endLocation);
     }
-        
-        
+
+
+    private DragTabItem? GetDragItem() => (DragTabItem?)Children.FirstOrDefault(c => c is DragTabItem
+    {
+        IsDragging: true
+    });
+
+
     #region Private Structs
 
     private readonly record struct LocationInfo(DragTabItem Item, double Start, double Mid, double End);

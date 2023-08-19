@@ -1,22 +1,24 @@
 ﻿using System.Globalization;
 
+
 namespace Tabalonia.Converters;
 
 
 public class ShowDefaultCloseButtonConverter : IMultiValueConverter
 {
-    /// <summary>
-    /// [0] is owning tabcontrol ShowDefaultCloseButton value.
-    /// [1] is item LogicalIndex
-    /// </summary>
-    public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values.Count == 2)
+        // [0] is owning TabsControl ShowDefaultCloseButton value.
+        // [1] is owning TabsControl FixedHeaderCount value.
+        // [2] is item LogicalIndex
+        if (values.Count == 3)
         {
-            bool showDefaultCloseButton = values[0] != AvaloniaProperty.UnsetValue && (bool) values[0];
-            int logicalIndex = values[1] == AvaloniaProperty.UnsetValue ? 0 : (int) values[1];
-
-            return showDefaultCloseButton;
+            if (values[0] is not bool showDefaultCloseButton ||
+                values[1] is not int fixedHeaderCount ||
+                values[2] is not int logicalIndex)
+                return false;
+            
+            return showDefaultCloseButton && logicalIndex >= fixedHeaderCount;
         }
 
         return false;
