@@ -84,7 +84,7 @@ public class TopPanel : Panel
         TabsControl.Arrange(new Rect(x, 0, tabsWidth, tabsHeight));
         x += tabsWidth;
             
-        ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+        ArrangeCenterVertical(AddTabButton, x, tabsHeight);
         x += addTabButtonWidth;
 
         double availableSpaceWidth = finalWidth - tabsWidth - addTabButtonWidth - leftThumbWidth;
@@ -106,17 +106,20 @@ public class TopPanel : Panel
 
         x += availableTabsWidth;
         
-        ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+        ArrangeCenterVertical(AddTabButton, x, tabsHeight);
         x += addTabButtonWidth;
             
         RightDragWindowThumb.Arrange(new Rect(x, 0, rightThumbWidth, tabsHeight));
     }
     
     
-    private static void ArrangeAddTabButton(Layoutable addTabButton, double x, double parentHeight)
+    private static void ArrangeCenterVertical(Layoutable control, double x, double fullHeight)
     {
-        double verticalMargin = (parentHeight - addTabButton.DesiredSize.Height) / 2;
+        double width = control.DesiredSize.Width;
+        double height = control.DesiredSize.Height;
         
-        addTabButton.Arrange(new Rect(x, verticalMargin, addTabButton.DesiredSize.Width, addTabButton.DesiredSize.Height));
+        double y = (fullHeight - height) / 2;
+        
+        control.Arrange(new Rect(x, y, width, height));
     }
 }
