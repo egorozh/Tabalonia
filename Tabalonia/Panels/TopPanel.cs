@@ -1,96 +1,88 @@
 namespace Tabalonia.Panels;
 
 
-public class TopPanel : StackPanel
+public class TopPanel : Panel
 {
+    private Layoutable LeftDragWindowThumb => Children[0];
+    private Layoutable TabsControl => Children[1];
+    private Layoutable AddTabButton => Children[2];
+    private Layoutable RightDragWindowThumb => Children[3];
+    
+    
     protected override Size MeasureOverride(Size availableSize)
     {
         double height = 0;
         double width = 0;
-
+        
         double availableWidth = availableSize.Width;
         double availableHeight = availableSize.Height;
-            
+        
         if (Children.Count != 4)
             return new Size(width, height);
-            
-        var leftDragWindowThumb = Children[0];
-        var tabsControl = Children[1];
-        var addTabButton = Children[2];
-        var rightDragWindowThumb = Children[3];
-            
-        addTabButton.Measure(new Size(availableWidth, availableHeight));
-        width += addTabButton.DesiredSize.Width;
-        availableWidth -= addTabButton.DesiredSize.Width;
         
-        leftDragWindowThumb.Measure(new Size(availableWidth, availableHeight));
-        width += leftDragWindowThumb.DesiredSize.Width;
-        availableWidth -= leftDragWindowThumb.DesiredSize.Width;
+        MeasureControl(AddTabButton, ref width, ref availableWidth, availableHeight);
+        MeasureControl(LeftDragWindowThumb, ref width, ref availableWidth, availableHeight);
+        MeasureControl(RightDragWindowThumb, ref width, ref availableWidth, availableHeight);
+        
+        TabsControl.Measure(new Size(availableWidth, availableHeight));
             
-        rightDragWindowThumb.Measure(new Size(availableWidth, availableHeight));
-        width += rightDragWindowThumb.DesiredSize.Width;
-        availableWidth -= rightDragWindowThumb.DesiredSize.Width;
+        width += TabsControl.DesiredSize.Width; 
             
-        tabsControl.Measure(new Size(availableWidth, availableHeight));
-            
-        width += tabsControl.DesiredSize.Width; 
-            
-        height = Math.Max(tabsControl.DesiredSize.Height, height);
+        height = Math.Max(TabsControl.DesiredSize.Height, height);
             
         return new Size(width, height);
+        
+        static void MeasureControl(Layoutable control, ref double w, ref double aW, in double h)
+        {
+            control.Measure(new Size(aW, h));
+            w += control.DesiredSize.Width;
+            aW -= control.DesiredSize.Width; 
+        }
     }
         
-        
+   
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (Children.Count != 4)
-            return finalSize;
+        double minimumWidth = LeftDragWindowThumb.DesiredSize.Width + AddTabButton.DesiredSize.Width + RightDragWindowThumb.DesiredSize.Width;
 
-        var leftDragWindowThumb = Children[0];
-        var tabsControl = Children[1];
-        var addTabButton = Children[2];
-        var rightDragWindowThumb = Children[3];
-            
-        double minimumWidth = leftDragWindowThumb.DesiredSize.Width + addTabButton.DesiredSize.Width + rightDragWindowThumb.DesiredSize.Width;
-
-        double tabsWidth = tabsControl.DesiredSize.Width;
-        double tabsHeight = tabsControl.DesiredSize.Height;
+        double tabsWidth = TabsControl.DesiredSize.Width;
+        double tabsHeight = TabsControl.DesiredSize.Height;
 
         double x;
         
         if (tabsWidth < finalSize.Width - minimumWidth)
         {
-            x = leftDragWindowThumb.DesiredSize.Width;
+            x = LeftDragWindowThumb.DesiredSize.Width;
             
-            leftDragWindowThumb.Arrange(new Rect(0, 0, x, tabsHeight));
+            LeftDragWindowThumb.Arrange(new Rect(0, 0, x, tabsHeight));
             
-            tabsControl.Arrange(new Rect(x, 0, tabsWidth, tabsHeight));
+            TabsControl.Arrange(new Rect(x, 0, tabsWidth, tabsHeight));
             x += tabsWidth;
             
-            ArrangeAddTabButton(addTabButton, x, tabsHeight);
-            x += addTabButton.DesiredSize.Width;
+            ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+            x += AddTabButton.DesiredSize.Width;
             
-            rightDragWindowThumb.Arrange(new Rect(x, 0, finalSize.Width - tabsControl.DesiredSize.Width - addTabButton.DesiredSize.Width - leftDragWindowThumb.DesiredSize.Width, tabsHeight));
+            RightDragWindowThumb.Arrange(new Rect(x, 0, finalSize.Width - TabsControl.DesiredSize.Width - AddTabButton.DesiredSize.Width - LeftDragWindowThumb.DesiredSize.Width, tabsHeight));
         }
         else
         {
             x = finalSize.Width - minimumWidth;
                 
-            leftDragWindowThumb.Arrange(new Rect(0, 0, leftDragWindowThumb.DesiredSize.Width, tabsHeight));
-            tabsControl.Arrange(new Rect(leftDragWindowThumb.DesiredSize.Width, 0, x, tabsHeight));
-            x += leftDragWindowThumb.DesiredSize.Width;
+            LeftDragWindowThumb.Arrange(new Rect(0, 0, LeftDragWindowThumb.DesiredSize.Width, tabsHeight));
+            TabsControl.Arrange(new Rect(LeftDragWindowThumb.DesiredSize.Width, 0, x, tabsHeight));
+            x += LeftDragWindowThumb.DesiredSize.Width;
             
-            ArrangeAddTabButton(addTabButton, x, tabsHeight);
-            x += addTabButton.DesiredSize.Width;
+            ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+            x += AddTabButton.DesiredSize.Width;
             
-            rightDragWindowThumb.Arrange(new Rect(x, 0, rightDragWindowThumb.DesiredSize.Width, tabsHeight));
+            RightDragWindowThumb.Arrange(new Rect(x, 0, RightDragWindowThumb.DesiredSize.Width, tabsHeight));
         }
             
         return finalSize;
     }
 
     
-    private static void ArrangeAddTabButton(Control addTabButton, double x, double parentHeight)
+    private static void ArrangeAddTabButton(Layoutable addTabButton, double x, double parentHeight)
     {
         double verticalMargin = (parentHeight - addTabButton.DesiredSize.Height) / 2;
         
