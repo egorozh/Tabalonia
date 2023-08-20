@@ -22,19 +22,19 @@ Done! Use TabsControl like:
 <controls:TabsControl ItemsSource="{Binding TabItems}"
                       NewItemFactory="{Binding NewItemFactory}"
                       FixedHeaderCount="1">
-        <TabControl.ContentTemplate>
-            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
-                <Grid>
-                    <TextBlock Text="{Binding SimpleContent}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Grid>
-            </DataTemplate>
-        </TabControl.ContentTemplate>
-        <TabControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
-                <TextBlock Text="{Binding Header}" />
-            </DataTemplate>
-        </TabControl.ItemTemplate>
+    <TabControl.ContentTemplate>
+        <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+            <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
+                <TextBlock  Text="{Binding SimpleContent}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+            </Grid>
+        </DataTemplate>
+    </TabControl.ContentTemplate>
+    <TabControl.ItemTemplate>
+        <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+            <TextBlock Text="{Binding Header}" />
+        </DataTemplate>
+    </TabControl.ItemTemplate>
 </controls:TabsControl>
 ```
