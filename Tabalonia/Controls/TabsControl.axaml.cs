@@ -251,9 +251,6 @@ public class TabsControl : TabControl
         
     private void ItemDragCompleted(object? sender, DragTabDragCompletedEventArgs e)
     {
-        if (!_dragging)
-            return;
-
         foreach (var item in DragTabItems())
         {
             item.IsDragging = false;

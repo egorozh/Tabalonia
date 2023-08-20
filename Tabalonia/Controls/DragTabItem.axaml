@@ -5,10 +5,10 @@
 
     <Design.PreviewWith>
         <Border Padding="20">
-            <StackPanel Spacing="20">
-                <TabItem Header="Leaf" />
-                <TabItem Header="Arch" IsSelected="True" />
-            </StackPanel>
+            <local:TabsControl NewItemFactory="{Binding NewItemFactory}">
+                <local:DragTabItem Header="Leaf" IsSelected="True"/>
+                <local:DragTabItem Header="Arch" />
+            </local:TabsControl>
         </Border>
     </Design.PreviewWith>
 

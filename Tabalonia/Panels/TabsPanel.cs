@@ -124,7 +124,7 @@ public class TabsPanel : Panel
     private Size ArrangeImpl(Size finalSize)
     {
         double x = 0;
-        int z = int.MaxValue;
+        int z = ZIndexes.NonSelected;
         int logicalIndex = 0;
 
         _itemsLocations.Clear();
@@ -151,8 +151,7 @@ public class TabsPanel : Panel
     private Size DragArrangeImpl(DragTabItem dragItem, Size finalSize)
     {
         var dragItemsLocations = GetLocations(Children.OfType<DragTabItem>(), dragItem);
-            
-        int zIndex = int.MaxValue;
+        
         double currentCoord = 0.0;
             
             
@@ -163,7 +162,6 @@ public class TabsPanel : Panel
             if (!Equals(item, dragItem) && item.LogicalIndex >= _tabsControl.FixedHeaderCount)
             {
                 SendToLocation(item, currentCoord, _itemWidth);
-                item.ZIndex = --zIndex;
             }
             else
             {
@@ -180,9 +178,7 @@ public class TabsPanel : Panel
                 
             currentCoord += _itemWidth + ItemOffset;
         }
-            
-        dragItem.ZIndex = int.MaxValue;
-            
+        
         return finalSize;
     }
     
@@ -208,7 +204,7 @@ public class TabsPanel : Panel
         var dragItemsLocations = GetLocations(Children.OfType<DragTabItem>(), dragItem);
             
         double currentCoord = 0.0;
-        int z = int.MaxValue;
+        int z = ZIndexes.NonSelected;
         int logicalIndex = 0;
 
         foreach (var location in dragItemsLocations)
@@ -221,7 +217,7 @@ public class TabsPanel : Panel
             item.LogicalIndex = logicalIndex++;
         }
 
-        dragItem.ZIndex = int.MaxValue;
+        dragItem.ZIndex = ZIndexes.Selected;
         
         DragCompleted?.Invoke();
             

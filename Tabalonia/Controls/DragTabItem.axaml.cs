@@ -7,7 +7,7 @@ public class DragTabItem : TabItem
 {
     #region Private Fields
 
-    private LeftPressedThumb _thumb;
+    private LeftPressedThumb _thumb = null!;
     
     private int _prevZindex;
     private int _logicalIndex;
@@ -105,8 +105,12 @@ public class DragTabItem : TabItem
     {
         base.OnPointerEntered(e);
 
+        if (IsSelected || IsDragging)
+            return;
+        
         _prevZindex = ZIndex;
-        ZIndex = int.MaxValue;
+        
+        ZIndex = ZIndexes.PointerOver;
     }
     
 
@@ -114,6 +118,9 @@ public class DragTabItem : TabItem
     {
         base.OnPointerExited(e);
 
+        if (IsSelected || IsDragging)
+            return;
+        
         ZIndex = _prevZindex;
     }
 
@@ -126,12 +133,7 @@ public class DragTabItem : TabItem
         {
             if (change.NewValue is true)
             {
-                _prevZindex = ZIndex;
-                ZIndex = int.MaxValue;
-            }
-            else
-            {
-                ZIndex = _prevZindex;
+                ZIndex = ZIndexes.Selected;
             }
         }
     }
