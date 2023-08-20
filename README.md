@@ -19,9 +19,9 @@ Install-Package Tabalonia
 
 Done! Use TabsControl like: 
 ```xml
- <controls:TabsControl ItemsSource="{Binding TabItems}"
-                       NewItemFactory="{Binding NewItemFactory}"
-                       FixedHeaderCount="3">
+<controls:TabsControl ItemsSource="{Binding TabItems}"
+                      NewItemFactory="{Binding NewItemFactory}"
+                      FixedHeaderCount="1">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
                 <Grid>
@@ -29,7 +29,6 @@ Done! Use TabsControl like:
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
                 </Grid>
-
             </DataTemplate>
         </TabControl.ContentTemplate>
         <TabControl.ItemTemplate>
@@ -37,5 +36,5 @@ Done! Use TabsControl like:
                 <TextBlock Text="{Binding Header}" />
             </DataTemplate>
         </TabControl.ItemTemplate>
-    </controls:TabsControl>
+</controls:TabsControl>
 ```
