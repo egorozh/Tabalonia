@@ -46,52 +46,45 @@ public class TopPanel : Panel
         if (Children.Count != 4)
             return finalSize;
         
-        double withoutTabsWidth = LeftDragWindowThumb.DesiredSize.Width + AddTabButton.DesiredSize.Width + RightDragWindowThumb.DesiredSize.Width;
-
+        double leftThumbWidth = LeftDragWindowThumb.DesiredSize.Width;
         double tabsWidth = TabsControl.DesiredSize.Width;
+        double addTabButtonWidth = AddTabButton.DesiredSize.Width;
+        double rightThumbWidth = RightDragWindowThumb.DesiredSize.Width;
+        
         double tabsHeight = TabsControl.DesiredSize.Height;
+        
+        double withoutTabsWidth = leftThumbWidth + addTabButtonWidth + rightThumbWidth;
         double availableTabsWidth = finalSize.Width - withoutTabsWidth;
+        
+        LeftDragWindowThumb.Arrange(new Rect(0, 0, leftThumbWidth, tabsHeight));
         
         if (tabsWidth < availableTabsWidth)
         {
-            ArrangeWhenTabsFit(tabsWidth, tabsHeight, finalSize.Width);
+            //|leftThumb|tab1    |tab2    |addTabButton|         rightThumb        |
+            ArrangeWhenTabsFit(x: leftThumbWidth, leftThumbWidth, tabsWidth, addTabButtonWidth, tabsHeight, finalSize.Width);
             return finalSize;
         }
 
-        ArrangeWhenTabsUnfit(tabsHeight, availableTabsWidth);
+        //    |leftThumb|tab1|tab2|tab3|tab4|tab5|tab6|tab7|addTabButton|rightThumb|
+        ArrangeWhenTabsUnfit(x: leftThumbWidth, tabsHeight, addTabButtonWidth, rightThumbWidth, availableTabsWidth);
         return finalSize;
     }
     
     
-    private void ArrangeWhenTabsUnfit(in double tabsHeight, in double availableTabsWidth)
+    /// <summary>
+    /// |leftThumb|tab1    |tab2    |addTabButton|         rightThumb        |
+    /// </summary>
+    private void ArrangeWhenTabsFit(double x, 
+        in double leftThumbWidth, 
+        in double tabsWidth, 
+        in double addTabButtonWidth, 
+        in double tabsHeight,
+        in double finalWidth)
     {
-        double leftThumbWidth = LeftDragWindowThumb.DesiredSize.Width;
-        LeftDragWindowThumb.Arrange(new Rect(0, 0, leftThumbWidth, tabsHeight));
-        
-        double x = leftThumbWidth;
-        
-        TabsControl.Arrange(new Rect(x, 0, availableTabsWidth, tabsHeight));
-
-        x += availableTabsWidth;
-        
-        double addTabButtonWidth = ArrangeAddTabButton(AddTabButton, x, tabsHeight);
-        x += addTabButtonWidth;
-            
-        RightDragWindowThumb.Arrange(new Rect(x, 0, RightDragWindowThumb.DesiredSize.Width, tabsHeight));
-    }
-    
-
-    private void ArrangeWhenTabsFit(in double tabsWidth, in double tabsHeight, in double finalWidth)
-    {
-        double leftThumbWidth = LeftDragWindowThumb.DesiredSize.Width;
-        LeftDragWindowThumb.Arrange(new Rect(0, 0, leftThumbWidth, tabsHeight));
-            
-        double x = leftThumbWidth;
-        
         TabsControl.Arrange(new Rect(x, 0, tabsWidth, tabsHeight));
         x += tabsWidth;
             
-        double addTabButtonWidth = ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+        ArrangeAddTabButton(AddTabButton, x, tabsHeight);
         x += addTabButtonWidth;
 
         double availableSpaceWidth = finalWidth - tabsWidth - addTabButtonWidth - leftThumbWidth;
@@ -99,13 +92,31 @@ public class TopPanel : Panel
         RightDragWindowThumb.Arrange(new Rect(x, 0, availableSpaceWidth, tabsHeight));
     }
 
+    
+    /// <summary>
+    /// |leftThumb|tab1|tab2|tab3|tab4|tab5|tab6|tab7|addTabButton|rightThumb|
+    /// </summary>
+    private void ArrangeWhenTabsUnfit(double x,
+        in double tabsHeight, 
+        in double addTabButtonWidth, 
+        in double rightThumbWidth, 
+        in double availableTabsWidth)
+    {
+        TabsControl.Arrange(new Rect(x, 0, availableTabsWidth, tabsHeight));
 
-    private static double ArrangeAddTabButton(Layoutable addTabButton, double x, double parentHeight)
+        x += availableTabsWidth;
+        
+        ArrangeAddTabButton(AddTabButton, x, tabsHeight);
+        x += addTabButtonWidth;
+            
+        RightDragWindowThumb.Arrange(new Rect(x, 0, rightThumbWidth, tabsHeight));
+    }
+    
+    
+    private static void ArrangeAddTabButton(Layoutable addTabButton, double x, double parentHeight)
     {
         double verticalMargin = (parentHeight - addTabButton.DesiredSize.Height) / 2;
         
         addTabButton.Arrange(new Rect(x, verticalMargin, addTabButton.DesiredSize.Width, addTabButton.DesiredSize.Height));
-
-        return addTabButton.DesiredSize.Width;
     }
 }
