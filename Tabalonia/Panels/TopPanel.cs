@@ -58,14 +58,20 @@ public class TopPanel : Panel
         
         LeftDragWindowThumb.Arrange(new Rect(0, 0, leftThumbWidth, tabsHeight));
         
+        //|                         finalSize.Width                            |
+        //
+        //   if (tabsWidth < availableTabsWidth):
+        //|leftThumb|tab1    |tab2    |addTabButton|         rightThumb        |
+        //
+        //   else
+        //|leftThumb|tab1|tab2|tab3|tab4|tab5|tab6|tab7|addTabButton|rightThumb|
+        
         if (tabsWidth < availableTabsWidth)
         {
-            //|leftThumb|tab1    |tab2    |addTabButton|         rightThumb        |
             ArrangeWhenTabsFit(x: leftThumbWidth, leftThumbWidth, tabsWidth, addTabButtonWidth, tabsHeight, finalSize.Width);
             return finalSize;
         }
-
-        //    |leftThumb|tab1|tab2|tab3|tab4|tab5|tab6|tab7|addTabButton|rightThumb|
+    
         ArrangeWhenTabsUnfit(x: leftThumbWidth, tabsHeight, addTabButtonWidth, rightThumbWidth, availableTabsWidth);
         return finalSize;
     }
