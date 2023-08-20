@@ -2,20 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Styles.Resources>
-        <SolidColorBrush x:Key="TabControlWindowActiveBackgroundBrush" Color="#202020" />
-        <SolidColorBrush x:Key="TabControlWindowInactiveBackgroundBrush" Color="#2F2F2F" />
-        
-        <SolidColorBrush x:Key="TabItemBackgroundBrush" Color="#202020" />
-        <SolidColorBrush x:Key="TabItemBackgroundBrushWindowInactive" Color="#2E2E2E" />
-
-        <SolidColorBrush x:Key="SelectedTabItemBackgroundBrush" Color="#3B3B3B" />
-
-        <SolidColorBrush x:Key="TabItemHeaderBackgroundUnselectedPointerOver" Color="#2A2A2A" />
-        <SolidColorBrush x:Key="TabItemHeaderBackgroundUnselectedPointerOverWindowInactive" Color="#363636" />
-
-
-        <SolidColorBrush x:Key="TabItemRightSeparatorBackgroundBrush" Color="#777777" />
-       
+	    <ResourceDictionary>
+		    <ResourceDictionary.MergedDictionaries>
+			    <ResourceInclude Source="Brushes.axaml"/>
+		    </ResourceDictionary.MergedDictionaries>
+		    
+		    <x:Double x:Key="LeftThumbWidth">80</x:Double>
+		    <x:Double x:Key="RightThumbWidth">50</x:Double>
+	    </ResourceDictionary>
 	</Styles.Resources> 
 
 	<StyleInclude Source="avares://Tabalonia/Themes/Controls.axaml" />

@@ -5,7 +5,7 @@
     
     <Application.Styles>
         <FluentTheme DensityStyle="Normal"/>
-        <themes:FluentTheme Mode="Dark" />
+        <themes:FluentTheme />
     </Application.Styles>
     
 </Application>
