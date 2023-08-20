@@ -5,10 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <Version>0.9.5</Version>
+        <Version>0.9.6</Version>
 
         <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
         <RepositoryUrl>https://github.com/egorozh/Tabalonia</RepositoryUrl>
+        <PackageTags>Tab Control, Draggable, Avalonia, AvaloniaUI</PackageTags>
+        <Description>Tab Control with draggable tabs for Avalonia</Description>
     </PropertyGroup>
 
     <ItemGroup>
