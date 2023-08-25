@@ -37,6 +37,10 @@ public class TabsControl : TabControl
         AvaloniaProperty.Register<TabsControl, int>(nameof(FixedHeaderCount), defaultValue: 0);
        
         
+    public static readonly StyledProperty<Func<Task<object>>?> NewItemFactoryAsyncProperty =
+        AvaloniaProperty.Register<TabsControl, Func<Task<object>>?>(nameof(NewItemAsyncFactory));
+    
+    
     public static readonly StyledProperty<Func<object>?> NewItemFactoryProperty =
         AvaloniaProperty.Register<TabsControl, Func<object>?>(nameof(NewItemFactory));
     
@@ -80,6 +84,13 @@ public class TabsControl : TabControl
     }
         
         
+    public Func<Task<object>>? NewItemAsyncFactory
+    {
+        get => GetValue(NewItemFactoryAsyncProperty);
+        set => SetValue(NewItemFactoryAsyncProperty, value);
+    }
+    
+    
     public Func<object>? NewItemFactory
     {
         get => GetValue(NewItemFactoryProperty);
@@ -122,10 +133,17 @@ public class TabsControl : TabControl
     }
         
         
-    public void AddItem()
+    public async Task AddItem()
     {
-        object? newItem = NewItemFactory?.Invoke();
-            
+        object? newItem = null;
+        
+        if (NewItemAsyncFactory is not null)
+        {
+            newItem = await NewItemAsyncFactory.Invoke();
+        }
+
+        newItem ??= NewItemFactory?.Invoke();
+        
         if (newItem == null) 
             throw new ApplicationException("NewItemFactory is null or returned null.");
 
