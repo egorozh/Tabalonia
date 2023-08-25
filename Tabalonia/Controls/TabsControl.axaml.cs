@@ -37,7 +37,7 @@ public class TabsControl : TabControl
         AvaloniaProperty.Register<TabsControl, int>(nameof(FixedHeaderCount), defaultValue: 0);
        
         
-    public static readonly StyledProperty<Func<Task<object>>?> NewItemFactoryAsyncProperty =
+    public static readonly StyledProperty<Func<Task<object>>?> NewItemAsyncFactoryProperty =
         AvaloniaProperty.Register<TabsControl, Func<Task<object>>?>(nameof(NewItemAsyncFactory));
     
     
@@ -86,8 +86,8 @@ public class TabsControl : TabControl
         
     public Func<Task<object>>? NewItemAsyncFactory
     {
-        get => GetValue(NewItemFactoryAsyncProperty);
-        set => SetValue(NewItemFactoryAsyncProperty, value);
+        get => GetValue(NewItemAsyncFactoryProperty);
+        set => SetValue(NewItemAsyncFactoryProperty, value);
     }
     
     
