@@ -14,6 +14,12 @@ public class TabsControl : TabControl
         
     private const double DefaultTabOffset = -8;
 
+    public const double WindowsDefaultLeftThumbWidth = 4d;
+    public const double MacOsDefaultLeftThumbWidth = 80d;
+    
+    public const double WindowsDefaultRightThumbWidth = 160d;
+    public const double MacOsDefaultRightThumbWidth = 50d;
+    
     #endregion
         
         
@@ -47,9 +53,17 @@ public class TabsControl : TabControl
     
     public static readonly StyledProperty<EventHandler<CloseLastTabEventArgs>?> LastTabClosedActionProperty =
         AvaloniaProperty.Register<TabsControl, EventHandler<CloseLastTabEventArgs>?>(nameof(LastTabClosedAction));
-        
+    
+    
+    public static readonly StyledProperty<double> LeftThumbWidthProperty =
+        AvaloniaProperty.Register<TabsControl, double>(nameof(LeftThumbWidth), defaultValue: OperatingSystem.IsWindows() ? WindowsDefaultLeftThumbWidth : MacOsDefaultLeftThumbWidth);
+    
+    
+    public static readonly StyledProperty<double> RightThumbWidthProperty =
+        AvaloniaProperty.Register<TabsControl, double>(nameof(RightThumbWidth), defaultValue: OperatingSystem.IsWindows() ? WindowsDefaultRightThumbWidth : MacOsDefaultRightThumbWidth);
+ 
     #endregion
-
+    
         
     #region Constructor
 
@@ -113,7 +127,21 @@ public class TabsControl : TabControl
         get => GetValue(FixedHeaderCountProperty);
         set => SetValue(FixedHeaderCountProperty, value);
     }
-
+    
+    
+    public double LeftThumbWidth
+    {
+        get => GetValue(LeftThumbWidthProperty);
+        set => SetValue(LeftThumbWidthProperty, value);
+    }
+    
+    
+    public double RightThumbWidth
+    {
+        get => GetValue(RightThumbWidthProperty);
+        set => SetValue(RightThumbWidthProperty, value);
+    }
+    
     #endregion
         
         

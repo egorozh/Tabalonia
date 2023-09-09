@@ -57,7 +57,7 @@
                                          HorizontalAlignment="Stretch">
                             
                             <Thumb Name="PART_LeftDragWindowThumb"
-                                   MinWidth="{DynamicResource LeftThumbWidth}"
+                                   MinWidth="{TemplateBinding LeftThumbWidth}"
                                    Theme="{StaticResource WindowThumbStyle}"/>
                             
                             <ItemsPresenter Name="PART_ItemsPresenter"
@@ -67,7 +67,7 @@
                                     Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
-                                   MinWidth="{DynamicResource RightThumbWidth}"
+                                   MinWidth="{TemplateBinding RightThumbWidth}"
                                    Theme="{StaticResource WindowThumbStyle}"/>
 
                         </panels:TopPanel>
