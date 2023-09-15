@@ -17,8 +17,23 @@ Install-Package Tabalonia
 # Or 'dotnet add package Tabalonia'
 ```
 
+Add the following to your App.axaml:
+```xml
+...
+xmlns:themes="clr-namespace:Tabalonia.Themes;assembly=Tabalonia"
+...
+    <Application.Styles>
+        ...
+        <themes:FluentTheme/>
+    </Application.Styles>
+...
+```
+
 Done! Use TabsControl like: 
 ```xml
+...
+xmlns:controls="clr-namespace:Tabalonia.Controls;assembly=Tabalonia"
+...
 <controls:TabsControl ItemsSource="{Binding TabItems}"
                       NewItemFactory="{Binding NewItemFactory}"
                       FixedHeaderCount="1">
