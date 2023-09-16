@@ -39,6 +39,8 @@
         
         <Setter Property="Background" Value="{DynamicResource TabControlWindowActiveBackgroundBrush}" />
         <Setter Property="Margin" Value="0 0 0 2" />
+        <Setter Property="AdjacentHeaderItemOffset" Value="-8" />
+        <Setter Property="TabItemWidth" Value="250" />
         
         <Setter Property="Template">
             <ControlTemplate>
@@ -64,7 +66,8 @@
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
 
                             <Button Classes="AddItemCommandButtonStyle" 
-                                    Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                    IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"
                                    MinWidth="{TemplateBinding RightThumbWidth}"

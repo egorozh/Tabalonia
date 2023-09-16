@@ -9,6 +9,6 @@
 	    </ResourceDictionary>
 	</Styles.Resources> 
 
-	<StyleInclude Source="avares://Tabalonia/Themes/Controls.axaml" />
+	<StyleInclude Source="Controls.axaml" />
 	
 </Styles>

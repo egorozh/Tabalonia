@@ -10,10 +10,8 @@ public class TabsControl : TabControl
 {
     #region Constants
 
-    private const double DefaultTabWidth = 250;
-        
-    private const double DefaultTabOffset = -8;
-
+    private const double DefaultTabWidth = 140;
+    
     public const double WindowsDefaultLeftThumbWidth = 4d;
     public const double MacOsDefaultLeftThumbWidth = 80d;
     
@@ -35,8 +33,20 @@ public class TabsControl : TabControl
         
     #region Avalonia Properties
         
+    public static readonly StyledProperty<double> AdjacentHeaderItemOffsetProperty =
+        AvaloniaProperty.Register<TabsControl, double>(nameof(AdjacentHeaderItemOffset), defaultValue: 0);
+    
+    
+    public static readonly StyledProperty<double> TabItemWidthProperty =
+        AvaloniaProperty.Register<TabsControl, double>(nameof(TabItemWidth), defaultValue: DefaultTabWidth);
+    
+    
     public static readonly StyledProperty<bool> ShowDefaultCloseButtonProperty =
         AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultCloseButton), defaultValue: true);
+    
+    
+    public static readonly StyledProperty<bool> ShowDefaultAddButtonProperty =
+        AvaloniaProperty.Register<TabsControl, bool>(nameof(ShowDefaultAddButton), defaultValue: true);
     
     
     public static readonly StyledProperty<int> FixedHeaderCountProperty =
@@ -75,8 +85,8 @@ public class TabsControl : TabControl
 
         _tabsPanel = new TabsPanel(this)
         {
-            ItemWidth = DefaultTabWidth,
-            ItemOffset = DefaultTabOffset
+            ItemWidth = TabItemWidth,
+            ItemOffset = AdjacentHeaderItemOffset
         };
         
         _tabsPanel.DragCompleted += TabsPanelOnDragCompleted;
@@ -91,10 +101,31 @@ public class TabsControl : TabControl
         
     #region Public Properties
         
+    public double AdjacentHeaderItemOffset
+    {
+        get => GetValue(AdjacentHeaderItemOffsetProperty);
+        set => SetValue(AdjacentHeaderItemOffsetProperty, value);
+    }
+    
+    
+    public double TabItemWidth
+    {
+        get => GetValue(TabItemWidthProperty);
+        set => SetValue(TabItemWidthProperty, value);
+    }
+    
+    
     public bool ShowDefaultCloseButton
     {
         get => GetValue(ShowDefaultCloseButtonProperty);
         set => SetValue(ShowDefaultCloseButtonProperty, value);
+    }
+    
+    
+    public bool ShowDefaultAddButton
+    {
+        get => GetValue(ShowDefaultAddButtonProperty);
+        set => SetValue(ShowDefaultAddButtonProperty, value);
     }
         
         
@@ -201,8 +232,23 @@ public class TabsControl : TabControl
 
     
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) => new DragTabItem();
+
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == AdjacentHeaderItemOffsetProperty)
+        {
+            _tabsPanel.ItemOffset = AdjacentHeaderItemOffset;
+        }
+        else if (change.Property == TabItemWidthProperty)
+        {
+            _tabsPanel.ItemWidth = TabItemWidth;
+        }
+    }
     
-    
+
     #endregion
         
         

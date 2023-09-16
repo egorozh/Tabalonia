@@ -5,13 +5,13 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 
-                <ResourceInclude Source="avares://Tabalonia/Controls/TabsControl.axaml" />
+                <ResourceInclude Source="TabsControl.axaml" />
               
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
     
-    <StyleInclude Source="avares://Tabalonia/Themes/Controls/Buttons.axaml" />
-    <StyleInclude Source="avares://Tabalonia/Controls/DragTabItem.axaml" />
+    <StyleInclude Source="Buttons.axaml" />
+    <StyleInclude Source="DragTabItem.axaml" />
 
 </Styles>

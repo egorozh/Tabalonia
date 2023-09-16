@@ -1,34 +1,13 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
+﻿namespace Tabalonia.Themes;
 
 
-namespace Tabalonia.Themes;
-
-
-public class FluentTheme : Styles
+public class FluentTheme : BaseTheme
 {
-    private Styles _fluentDark = new();
-    
-    
-    public FluentTheme(IServiceProvider serviceProvider)
-    {
-        var ctx = serviceProvider.GetService(typeof(IUriContext)) as IUriContext 
-                  ?? throw new NullReferenceException("Unable retrieve UriContext");
-       
-        InitStyles(ctx.BaseUri);
-    }
-    
+    protected override string ResourceString => "avares://Tabalonia/Themes/Fluent/Fluent.axaml";
 
-    private void InitStyles(Uri baseUri)
+
+    public FluentTheme(IServiceProvider serviceProvider)
+        :base(serviceProvider)
     {
-        _fluentDark = new Styles
-        {
-            new StyleInclude(baseUri)
-            {
-                Source = new Uri("avares://Tabalonia/Themes/FluentDark.axaml")
-            }
-        };
-        
-        Add(_fluentDark);
     }
 }

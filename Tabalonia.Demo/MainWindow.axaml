@@ -7,24 +7,29 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Tabalonia.Demo.MainWindow"
         Title="TabaloniaOld Demo">
-    
+
     <controls:TabsControl ItemsSource="{Binding TabItems}"
                           NewItemFactory="{Binding NewItemFactory}"
-                          FixedHeaderCount="1">
+                          FixedHeaderCount="1"
+                          ShowDefaultAddButton="False"
+                          ShowDefaultCloseButton="True">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
                     <TextBlock Text="{Binding SimpleContent}"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center" />
                 </Grid>
 
             </DataTemplate>
         </TabControl.ContentTemplate>
+
         <TabControl.ItemTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
                 <TextBlock Text="{Binding Header}" />
             </DataTemplate>
         </TabControl.ItemTemplate>
+        
     </controls:TabsControl>
 </Window>
