@@ -26,9 +26,9 @@ public class TopPanel : Panel
         
         TabsControl.Measure(new Size(availableWidth, availableHeight));
             
-        width += TabsControl.DesiredSize.Width; 
-            
-        height = Math.Max(TabsControl.DesiredSize.Height, height);
+        width += TabsControl.DesiredSize.Width;
+        
+        height = Math.Max(TabsControl.DesiredSize.Height, AddTabButton.DesiredSize.Height);
             
         return new Size(width, height);
         
@@ -51,7 +51,7 @@ public class TopPanel : Panel
         double addTabButtonWidth = AddTabButton.DesiredSize.Width;
         double rightThumbWidth = RightDragWindowThumb.DesiredSize.Width;
         
-        double tabsHeight = TabsControl.DesiredSize.Height;
+        double tabsHeight = Math.Max(TabsControl.DesiredSize.Height, finalSize.Height);
         
         double withoutTabsWidth = leftThumbWidth + addTabButtonWidth + rightThumbWidth;
         double availableTabsWidth = finalSize.Width - withoutTabsWidth;
