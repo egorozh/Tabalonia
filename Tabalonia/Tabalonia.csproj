@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <Version>0.9.10</Version>
+        <Version>0.9.11</Version>
 
         <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
         <RepositoryUrl>https://github.com/egorozh/Tabalonia</RepositoryUrl>
