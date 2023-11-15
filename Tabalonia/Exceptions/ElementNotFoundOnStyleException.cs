@@ -1,9 +1,6 @@
 ﻿namespace Tabalonia.Exceptions;
 
 
-public class ElementNotFoundOnStyleException : Exception
+public class ElementNotFoundOnStyleException(string elementName) : Exception($"\"{elementName}\" not found on Style")
 {
-    public ElementNotFoundOnStyleException(string elementName) : base($"\"{elementName}\" not found on Style")
-    {
-    }
 }
