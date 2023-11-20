@@ -66,7 +66,7 @@
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
 
                             <Button Classes="AddItemCommandButtonStyle" 
-                                    Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Command="{Binding AddItemCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                     IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
 
                             <Thumb Name="PART_RightDragWindowThumb"

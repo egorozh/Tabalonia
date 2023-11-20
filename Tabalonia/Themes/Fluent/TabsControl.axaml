@@ -125,7 +125,7 @@
                             <ItemsPresenter Name="PART_ItemsPresenter"
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
 
-                            <Button Command="{Binding AddItem, RelativeSource={RelativeSource TemplatedParent}}"
+                            <Button Command="{Binding AddItemCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                     Theme="{StaticResource AddItemCommandButton}" 
                                     IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
 

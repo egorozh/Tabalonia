@@ -154,7 +154,7 @@
 
                             <Button Grid.Column="1"
                                     Theme="{StaticResource CloseItemCommandButton}"
-                                    Command="{Binding $parent[controls:TabsControl].CloseItem}"
+                                    Command="{Binding $parent[controls:TabsControl].CloseItemCommand}"
                                     CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}">
 
                                 <Button.IsVisible>

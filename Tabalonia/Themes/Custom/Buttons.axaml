@@ -1,50 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Style Selector="Button.CloseItemButtonStyle">
-        <Setter Property="Width" Value="16" />
-        <Setter Property="Height" Value="16" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="White" />
-
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border CornerRadius="8"
-                        Background="{TemplateBinding Background}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        BorderBrush="{TemplateBinding BorderBrush}">
-
-                    <Viewbox Width="8"
-                             Height="8">
-                        <Path Stretch="Uniform"
-                              Fill="{TemplateBinding Foreground}"
-                              Data="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
-                    </Viewbox>
-                </Border>
-			</ControlTemplate>
-        </Setter>
-    </Style>
-
-    <Style Selector="Button.CloseItemButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#1A1A1A" />
-    </Style>
-
-    <Style Selector="Window[IsActive=false] Button.CloseItemButtonStyle">
-        <Setter Property="Foreground" Value="#666666" />
-    </Style>
-
-    <Style
-        Selector="Window[IsActive=false] Button.CloseItemButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#b8b8b8" />
-    </Style>
-
-    <Style Selector="Button.CloseItemButtonStyle.CloseItemButtonStyle:pressed">
-        <Setter Property="Background" Value="#333333" />
-    </Style>
-
-    <Style Selector="Button.CloseItemButtonStyle">
-        <Setter Property="CornerRadius" Value="8" />
-    </Style>
+	
 
     <Style Selector="Button.AddItemCommandButtonStyle">
 		<Setter Property="Background" Value="Transparent" />

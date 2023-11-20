@@ -29,11 +29,52 @@
                 <ControlTemplate>
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style Selector="Button.CloseItemButtonStyle">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="CornerRadius" Value="8" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}">
+
+                    <Viewbox Width="8"
+                             Height="8">
+                        <Path Stretch="Uniform"
+                              Fill="{TemplateBinding Foreground}"
+                              Data="M13.46,12L19,17.54V19H17.54L12,13.46L6.46,19H5V17.54L10.54,12L5,6.46V5H6.46L12,10.54L17.54,5H19V6.46L13.46,12Z" />
+                    </Viewbox>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.CloseItemButtonStyle:pointerover">
+        <Setter Property="Foreground" Value="#1A1A1A" />
+    </Style>
+
+    <Style Selector="Window[IsActive=false] Button.CloseItemButtonStyle">
+        <Setter Property="Foreground" Value="#666666" />
+    </Style>
+
+    <Style
+        Selector="Window[IsActive=false] Button.CloseItemButtonStyle:pointerover">
+        <Setter Property="Foreground" Value="#b8b8b8" />
+    </Style>
+
+    <Style Selector="Button.CloseItemButtonStyle.CloseItemButtonStyle:pressed">
+        <Setter Property="Background" Value="#333333" />
     </Style>
 
     <Style Selector="local|DragTabItem">
@@ -74,40 +115,48 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="{TemplateBinding Padding}">
-                        <Grid ColumnDefinitions="*, Auto">
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <Panel>
 
-                            <ContentPresenter Name="PART_ContentPresenter"
-                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                              Content="{TemplateBinding Header}"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+                            <Panel Margin="{TemplateBinding Padding}">
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  Margin="0 0 16 0"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  Content="{TemplateBinding Header}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                                  TextBlock.FontSize="{TemplateBinding FontSize}"
+                                                  TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+                            </Panel>
 
-                            <local:LeftPressedThumb Grid.Column="0"
-                                                    Name="PART_Thumb"
+
+                            <local:LeftPressedThumb Name="PART_Thumb"
                                                     Classes="DragTabItemThumbStyle" />
 
-                            <Button Grid.Column="1"
+                            <Button Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
                                     BorderBrush="{TemplateBinding Background}"
                                     Classes="CloseItemButtonStyle"
-                                    Command="{Binding $parent[local:TabsControl].CloseItem}"
+                                    Command="{Binding $parent[local:TabsControl].CloseItemCommand}"
                                     CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                                 <Button.IsVisible>
                                     <MultiBinding Converter="{StaticResource ShowDefaultCloseButtonConverter}">
-                                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}"
-                                                 Path="ShowDefaultCloseButton" />
-                                        <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}" 
-                                                 Path="FixedHeaderCount" />
-                                        <Binding RelativeSource="{RelativeSource TemplatedParent}" 
+                                        <Binding
+                                            RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}"
+                                            Path="ShowDefaultCloseButton" />
+                                        <Binding
+                                            RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:TabsControl}}"
+                                            Path="FixedHeaderCount" />
+                                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                                  Path="LogicalIndex" />
                                     </MultiBinding>
                                 </Button.IsVisible>
                             </Button>
-                        </Grid>
+
+                        </Panel>
+
                     </Border>
 
                     <Border Grid.Column="2"

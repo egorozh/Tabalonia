@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
 
-        <Version>0.10.0</Version>
+        <Version>0.10.1</Version>
 
         <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
         <RepositoryUrl>https://github.com/egorozh/Tabalonia</RepositoryUrl>

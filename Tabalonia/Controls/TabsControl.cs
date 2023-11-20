@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Windows.Input;
 using Tabalonia.Events;
 using Tabalonia.Panels;
 
@@ -27,6 +28,9 @@ public class TabsControl : TabControl
         
     private DragTabItem? _draggedItem;
     private bool _dragging;
+    
+    private ICommand _addItemCommand;
+    private ICommand _closeItemCommand;
         
     #endregion
         
@@ -72,6 +76,20 @@ public class TabsControl : TabControl
     public static readonly StyledProperty<double> RightThumbWidthProperty =
         AvaloniaProperty.Register<TabsControl, double>(nameof(RightThumbWidth), defaultValue: OperatingSystem.IsWindows() ? WindowsDefaultRightThumbWidth : MacOsDefaultRightThumbWidth);
  
+    
+    public static readonly DirectProperty<TabsControl, ICommand> AddItemCommandProperty =
+        AvaloniaProperty.RegisterDirect<TabsControl, ICommand>(
+            nameof(AddItemCommand),
+            o => o.AddItemCommand,
+            (o, v) => o.AddItemCommand = v);
+    
+    
+    public static readonly DirectProperty<TabsControl, ICommand> CloseItemCommandProperty =
+        AvaloniaProperty.RegisterDirect<TabsControl, ICommand>(
+            nameof(CloseItemCommand),
+            o => o.CloseItemCommand,
+            (o, v) => o.CloseItemCommand = v);
+    
     #endregion
     
         
@@ -94,6 +112,9 @@ public class TabsControl : TabControl
         ItemsPanel = new FuncTemplate<Panel>(() => _tabsPanel);
 
         LastTabClosedAction = (_,_) => GetThisWindow()?.Close();
+        
+        _addItemCommand = new SimpleActionCommand(AddItem);
+        _closeItemCommand = new SimpleParamActionCommand(CloseItem);
     }
     
     #endregion
@@ -173,47 +194,22 @@ public class TabsControl : TabControl
         set => SetValue(RightThumbWidthProperty, value);
     }
     
-    #endregion
-        
-        
-    #region Public Methods
-        
-    public void CloseItem(object tabItemSource)
+    
+    public ICommand AddItemCommand
     {
-        if (tabItemSource == null)
-            throw new ApplicationException("Valid DragItem to close is required.");
-
-        var tabItem = FindDragTabItem(tabItemSource);
-
-        if (tabItem == null)
-            return;
-            
-        RemoveItem(tabItem);
+        get => _addItemCommand;
+        private set => SetAndRaise(AddItemCommandProperty, ref _addItemCommand, value);
     }
-        
-        
-    public async Task AddItem()
+    
+    
+    public ICommand CloseItemCommand
     {
-        object? newItem = null;
-        
-        if (NewItemAsyncFactory is not null)
-        {
-            newItem = await NewItemAsyncFactory.Invoke();
-        }
-
-        newItem ??= NewItemFactory?.Invoke();
-        
-        if (newItem == null) 
-            throw new ApplicationException("NewItemFactory is null or returned null.");
-
-        if (ItemsSource is IList itemsList)
-            itemsList.Add(newItem);
-            
-        SelectedItem = newItem;
+        get => _closeItemCommand;
+        private set => SetAndRaise(CloseItemCommandProperty, ref _closeItemCommand, value);
     }
-        
+    
     #endregion
-        
+    
         
     #region Protected Methods
 
@@ -437,6 +433,46 @@ public class TabsControl : TabControl
         var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
 
         window?.DragWindow(e.Vector.X, e.Vector.Y);
+    }
+    
+    
+    private void AddItem()
+    {
+        if (NewItemAsyncFactory is not null)
+        {
+            NewItemAsyncFactory.Invoke().ContinueWith(t =>
+            {
+                AddItem(t.Result);
+            }, scheduler: TaskScheduler.FromCurrentSynchronizationContext());
+            
+            return;
+        }
+        
+        AddItem(NewItemFactory?.Invoke());
+    }
+
+
+    private void AddItem(object? newItem)
+    {
+        ArgumentNullException.ThrowIfNull(newItem);
+        
+        if (ItemsSource is IList itemsList)
+            itemsList.Add(newItem);
+            
+        SelectedItem = newItem;
+    }
+    
+    
+    private void CloseItem(object? tabItemSource)
+    {
+        ArgumentNullException.ThrowIfNull(tabItemSource);
+       
+        var tabItem = FindDragTabItem(tabItemSource);
+
+        if (tabItem == null)
+            return;
+            
+        RemoveItem(tabItem);
     }
         
     #endregion
