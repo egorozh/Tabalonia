@@ -276,9 +276,9 @@ public class TabsControl : TabControl
         SelectedItem = removedItemIndex == items.Count ? items[^1] : items[removedItemIndex];
 
 
-    private Window? GetThisWindow() => this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
+    private Window? GetThisWindow() => this.FindLogicalAncestorOfType<Window>();
 
-    
+
     private IEnumerable<DragTabItem> DragTabItems()
     {
         foreach (object item in Items)
@@ -397,32 +397,11 @@ public class TabsControl : TabControl
             }
         }
     }
-
-        
-    private static DragTabItem? FindDragTabItem(object originalSource)
-    {
-        if (originalSource is DragTabItem dragTabItem)
-            return dragTabItem;
-
-        if (originalSource is Visual visual &&
-            visual.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault() is { } item)
-        {
-            return item;
-        }
-
-        if (originalSource is ILogical logical &&
-            logical.LogicalTreeAncestory().OfType<Popup>().LastOrDefault() is {PlacementTarget: { } placementTarget})
-        {
-            return placementTarget.VisualTreeAncestory().OfType<DragTabItem>().FirstOrDefault();
-        }
-
-        return null;
-    }
-        
+    
 
     private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
     {
-        var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
+        var window = this.FindLogicalAncestorOfType<Window>();
 
         window?.RestoreWindow();
     }
@@ -430,7 +409,7 @@ public class TabsControl : TabControl
         
     private void WindowDragThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
-        var window = this.LogicalTreeAncestory().OfType<Window>().FirstOrDefault();
+        var window = this.FindLogicalAncestorOfType<Window>();
 
         window?.DragWindow(e.Vector.X, e.Vector.Y);
     }
@@ -467,11 +446,9 @@ public class TabsControl : TabControl
     {
         ArgumentNullException.ThrowIfNull(tabItemSource);
        
-        var tabItem = FindDragTabItem(tabItemSource);
-
-        if (tabItem == null)
+        if (tabItemSource is not DragTabItem tabItem)
             return;
-            
+        
         RemoveItem(tabItem);
     }
         

@@ -13,4 +13,3 @@ global using Avalonia.Layout;
 global using Avalonia.LogicalTree;
 global using Avalonia.Styling;
 global using Avalonia.Threading;
-global using Avalonia.VisualTree;

@@ -6,13 +6,18 @@
         xmlns:controls="clr-namespace:Tabalonia.Controls;assembly=Tabalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Tabalonia.Demo.MainWindow"
-        Title="TabaloniaOld Demo">
-
+        Title="Tabalonia Demo"
+        
+        Background="{DynamicResource TabControlWindowActiveBackgroundBrush}"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaToDecorationsHint="True">
+   
     <controls:TabsControl ItemsSource="{Binding TabItems}"
                           NewItemFactory="{Binding NewItemFactory}"
                           FixedHeaderCount="1"
-                          ShowDefaultAddButton="False"
-                          ShowDefaultCloseButton="True">
+                          ShowDefaultAddButton="True"
+                          ShowDefaultCloseButton="True"
+                          Margin="0 8 0 0">
         <TabControl.ContentTemplate>
             <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
 

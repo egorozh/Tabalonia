@@ -5,8 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
+        <IsAotCompatible>true</IsAotCompatible>
 
-        <Version>0.10.1</Version>
+        <Version>0.10.2</Version>
 
         <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
         <RepositoryUrl>https://github.com/egorozh/Tabalonia</RepositoryUrl>

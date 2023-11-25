@@ -15,39 +15,6 @@ internal static class Extensions
         return element;
     }
 
-    
-    /// <summary>
-    /// Yields the visual ancestory (including the starting point).
-    /// </summary>
-    /// <param name="dependencyObject"></param>
-    /// <returns></returns>
-    public static IEnumerable<Visual> VisualTreeAncestory(this Visual dependencyObject)
-    {
-        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
-
-        while (dependencyObject != null)
-        {
-            yield return dependencyObject;
-            dependencyObject = dependencyObject.GetVisualParent();
-        }
-    }
-
-    /// <summary>
-    /// Yields the logical ancestory (including the starting point).
-    /// </summary>
-    /// <param name="dependencyObject"></param>
-    /// <returns></returns>
-    public static IEnumerable<ILogical> LogicalTreeAncestory(this ILogical dependencyObject)
-    {
-        if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
-
-        while (dependencyObject != null)
-        {
-            yield return dependencyObject;
-            dependencyObject = dependencyObject.GetLogicalParent();
-        }
-    }
-
 
     public static void RestoreWindow(this Window? window)
     {
