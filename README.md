@@ -6,7 +6,7 @@ Draggable tab items on Avalonia here!
 
 This is a port of the [Draggablz](https://github.com/ButchersBoy/Dragablz)
 
-![example](https://github.com/egorozh/Tabalonia/blob/master/workflows/demo.gif "Example application")
+![example](https://github.com/egorozh/Tabalonia/blob/main/workflows/demo.gif "Example application")
 
 ### Getting Started
 
