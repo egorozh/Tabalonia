@@ -29,21 +29,21 @@
     </Style>
 
     <Style Selector="Button.AddItemCommandButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#EAE8E7" />
-        <Setter Property="Background" Value="#464546" />
+        <Setter Property="Foreground" Value="{DynamicResource AddItemCommandButtonForegroundPointerOverBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AddItemCommandButtonBackgroundPointerOverBrush}" />
     </Style>
 
     <Style Selector="Window[IsActive=false] Button.AddItemCommandButtonStyle">
-        <Setter Property="Foreground" Value="#BFBFBF" />
+        <Setter Property="Foreground" Value="{DynamicResource InactiveWindowAddCommandButtonForegroundBrush}" />
     </Style>
 
     <Style
         Selector="Window[IsActive=false] Button.AddItemCommandButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#C9C9C9" />
+        <Setter Property="Foreground" Value="{DynamicResource InactiveWindowAddCommandButtonPointerOverForegroundBrush}" />
     </Style>
 
     <Style Selector="Button.AddItemCommandButtonStyle.AddItemCommandButtonStyle:pressed">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{DynamicResource AddItemCommandButtonBackgroundPressedBrush}" />
     </Style>
 
     <Style Selector="Button.AddItemCommandButtonStyle">

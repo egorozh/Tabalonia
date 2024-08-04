@@ -19,7 +19,7 @@
                           ShowDefaultCloseButton="True"
                           Margin="0 8 0 0">
         <TabControl.ContentTemplate>
-            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+            <DataTemplate DataType="dragablzDemo:TabItemViewModel">
 
                 <Grid Background="{DynamicResource SelectedTabItemBackgroundBrush}">
                     <TextBlock Text="{Binding SimpleContent}"
@@ -31,7 +31,7 @@
         </TabControl.ContentTemplate>
 
         <TabControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type dragablzDemo:TabItemViewModel}">
+            <DataTemplate DataType="dragablzDemo:TabItemViewModel">
                 <TextBlock Text="{Binding Header}" />
             </DataTemplate>
         </TabControl.ItemTemplate>
