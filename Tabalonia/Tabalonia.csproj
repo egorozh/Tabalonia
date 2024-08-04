@@ -7,7 +7,7 @@
         <LangVersion>preview</LangVersion>
         <IsAotCompatible>true</IsAotCompatible>
 
-        <Version>0.10.3</Version>
+        <Version>0.10.4</Version>
 
         <Copyright>Copyright 2022-$([System.DateTime]::Now.ToString(`yyyy`)) &#169; The Tabalonia Project</Copyright>
         <PackageProjectUrl>https://github.com/egorozh/Tabalonia</PackageProjectUrl>
@@ -16,19 +16,25 @@
         <Description>Tab Control with draggable tabs for Avalonia</Description>
         <PackageIcon>Icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>Supported a light mode for the custom theme</PackageReleaseNotes>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
-    
-   
+
+
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.0.0" />
     </ItemGroup>
-    
+
     <ItemGroup Label="PackageIcon">
-        <None Include="..\Icon.png" Pack="true" Visible="false" PackagePath=""/>
+        <None Include="..\Icon.png" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
-    
+
     <ItemGroup>
-        <None Include="..\README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="..\README.md" Pack="true" Visible="false" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
     
 </Project>

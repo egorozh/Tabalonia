@@ -39,7 +39,7 @@
         <Setter Property="Width" Value="16" />
         <Setter Property="Height" Value="16" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{DynamicResource CloseItemButtonForeground}" />
         <Setter Property="CornerRadius" Value="8" />
 
         <Setter Property="Template">
@@ -61,20 +61,20 @@
     </Style>
 
     <Style Selector="Button.CloseItemButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#1A1A1A" />
+        <Setter Property="Foreground" Value="{DynamicResource CloseItemButtonPointerOverBrush}" />
     </Style>
 
     <Style Selector="Window[IsActive=false] Button.CloseItemButtonStyle">
-        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="Foreground" Value="{DynamicResource CloseItemButtonInactiveWindowBrush}" />
     </Style>
 
     <Style
         Selector="Window[IsActive=false] Button.CloseItemButtonStyle:pointerover">
-        <Setter Property="Foreground" Value="#b8b8b8" />
+        <Setter Property="Foreground" Value="{DynamicResource CloseItemButtonInactiveWindowPointerOverBrush}" />
     </Style>
 
     <Style Selector="Button.CloseItemButtonStyle.CloseItemButtonStyle:pressed">
-        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Background" Value="{DynamicResource CloseItemButtonPressedBrush}" />
     </Style>
 
     <Style Selector="local|DragTabItem">
