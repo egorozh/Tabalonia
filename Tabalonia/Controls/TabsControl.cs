@@ -221,12 +221,25 @@ public class TabsControl : TabControl
         base.OnApplyTemplate(e);
 
         var leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
-        leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+        leftDragWindowThumb.AddHandler(PointerPressedEvent, OnThumbBeginDrag, handledEventsToo: true);
+        //leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
         leftDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
 
         var rightDragWindowThumb = e.NameScope.Get<Thumb>("PART_RightDragWindowThumb");
-        rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+        rightDragWindowThumb.AddHandler(PointerPressedEvent, OnThumbBeginDrag, handledEventsToo: true);
+        // rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
         rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
+    }
+
+    private void OnThumbBeginDrag(object? sender, PointerPressedEventArgs e)
+    {
+        var toplevel = TopLevel.GetTopLevel(this);
+        if(toplevel is not Window window) return;
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
+            e.GetCurrentPoint(this).Pointer.Type == PointerType.Touch)
+        {
+            window.BeginMoveDrag(e);
+        }
     }
 
 
