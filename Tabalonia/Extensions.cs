@@ -20,8 +20,9 @@ internal static class Extensions
     {
         if (window is null)
             return;
-
-        window.WindowState = WindowState.Maximized;
+        if (!window.CanResize) return;
+        if (window.WindowState == WindowState.FullScreen) return;
+        window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     }
 
 

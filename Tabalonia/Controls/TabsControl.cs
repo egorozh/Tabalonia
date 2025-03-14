@@ -221,14 +221,15 @@ public class TabsControl : TabControl
         base.OnApplyTemplate(e);
 
         var leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
-        leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+        leftDragWindowThumb.AddHandler(PointerPressedEvent, OnThumbBeginDrag, handledEventsToo: true);
+        //leftDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
         leftDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
 
         var rightDragWindowThumb = e.NameScope.Get<Thumb>("PART_RightDragWindowThumb");
-        rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
+        rightDragWindowThumb.AddHandler(PointerPressedEvent, OnThumbBeginDrag, handledEventsToo: true);
+        // rightDragWindowThumb.DragDelta += WindowDragThumbOnDragDelta;
         rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
     }
-
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
         new DragTabItem();
@@ -401,6 +402,16 @@ public class TabsControl : TabControl
         }
     }
 
+    private void OnThumbBeginDrag(object? sender, PointerPressedEventArgs e)
+    {
+        var toplevel = TopLevel.GetTopLevel(this);
+        if(toplevel is not Window window) return;
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
+            e.GetCurrentPoint(this).Pointer.Type == PointerType.Touch)
+        {
+            window.BeginMoveDrag(e);
+        }
+    }
 
     private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
     {
@@ -409,7 +420,7 @@ public class TabsControl : TabControl
         window?.RestoreWindow();
     }
 
-
+    [Obsolete]
     private void WindowDragThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
         var window = this.FindLogicalAncestorOfType<Window>();
