@@ -231,18 +231,6 @@ public class TabsControl : TabControl
         rightDragWindowThumb.DoubleTapped += WindowDragThumbOnDoubleTapped;
     }
 
-    private void OnThumbBeginDrag(object? sender, PointerPressedEventArgs e)
-    {
-        var toplevel = TopLevel.GetTopLevel(this);
-        if(toplevel is not Window window) return;
-        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
-            e.GetCurrentPoint(this).Pointer.Type == PointerType.Touch)
-        {
-            window.BeginMoveDrag(e);
-        }
-    }
-
-
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
         new DragTabItem();
 
@@ -414,6 +402,16 @@ public class TabsControl : TabControl
         }
     }
 
+    private void OnThumbBeginDrag(object? sender, PointerPressedEventArgs e)
+    {
+        var toplevel = TopLevel.GetTopLevel(this);
+        if(toplevel is not Window window) return;
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
+            e.GetCurrentPoint(this).Pointer.Type == PointerType.Touch)
+        {
+            window.BeginMoveDrag(e);
+        }
+    }
 
     private void WindowDragThumbOnDoubleTapped(object? sender, RoutedEventArgs e)
     {
@@ -422,7 +420,7 @@ public class TabsControl : TabControl
         window?.RestoreWindow();
     }
 
-
+    [Obsolete]
     private void WindowDragThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
         var window = this.FindLogicalAncestorOfType<Window>();
