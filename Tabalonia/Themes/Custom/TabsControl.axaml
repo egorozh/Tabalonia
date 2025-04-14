@@ -57,6 +57,8 @@
                                          Name="PART_TopPanel"
                                          Background="{TemplateBinding Background}"
                                          HorizontalAlignment="Stretch">
+                            <ContentPresenter Name="PART_LeftContent"
+                                              Content="{TemplateBinding LeftContent}" />
                             
                             <Thumb Name="PART_LeftDragWindowThumb"
                                    MinWidth="{TemplateBinding LeftThumbWidth}"
@@ -65,7 +67,8 @@
                             <ItemsPresenter Name="PART_ItemsPresenter"
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
 
-                            <Button Classes="AddItemCommandButtonStyle" 
+                            <Button Name="PART_AddItemButton"
+                                    Classes="AddItemCommandButtonStyle" 
                                     Command="{Binding AddItemCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                     IsVisible="{TemplateBinding ShowDefaultAddButton}"/>
 
@@ -73,6 +76,8 @@
                                    MinWidth="{TemplateBinding RightThumbWidth}"
                                    Theme="{StaticResource WindowThumbStyle}"/>
 
+                            <ContentPresenter Name="PART_RightContent"
+                                              Content="{TemplateBinding RightContent}" />
                         </panels:TopPanel>
 
                         <ContentPresenter Grid.Row="1"

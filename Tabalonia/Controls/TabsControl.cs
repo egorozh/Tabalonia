@@ -93,6 +93,12 @@ public class TabsControl : TabControl
             o => o.CloseItemCommand,
             (o, v) => o.CloseItemCommand = v);
 
+    public static readonly StyledProperty<object?> LeftContentProperty =
+        AvaloniaProperty.Register<TabsControl, object?>(nameof(LeftContent));
+    
+    public static readonly StyledProperty<object?> RightContentProperty =
+        AvaloniaProperty.Register<TabsControl, object?>(nameof(RightContent));
+    
     #endregion
 
 
@@ -124,7 +130,7 @@ public class TabsControl : TabControl
 
 
     #region Public Properties
-
+    
     public double AdjacentHeaderItemOffset
     {
         get => GetValue(AdjacentHeaderItemOffsetProperty);
@@ -211,6 +217,18 @@ public class TabsControl : TabControl
         private set => SetAndRaise(CloseItemCommandProperty, ref _closeItemCommand, value);
     }
 
+    public object? LeftContent
+    {
+        get => GetValue(LeftContentProperty);
+        set => SetValue(LeftContentProperty, value);
+    }
+    
+    public object? RightContent
+    {
+        get => GetValue(RightContentProperty);
+        set => SetValue(RightContentProperty, value);
+    }
+    
     #endregion
 
 
