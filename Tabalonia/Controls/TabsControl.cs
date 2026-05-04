@@ -559,7 +559,7 @@ public class TabsControl : TabControl
         if (_draggedTabModel is null)
             return false;
 
-        return MoveItemToAnotherTabsControl(_draggedTabModel, target);
+        return MoveItemToAnotherTabsControl(_draggedTabModel, target, e.ScreenPoint.Value);
     }
 
 
@@ -578,7 +578,7 @@ public class TabsControl : TabControl
     }
 
 
-    private bool MoveItemToAnotherTabsControl(object item, TabsControl target)
+    private bool MoveItemToAnotherTabsControl(object item, TabsControl target, Point dropScreenPoint)
     {
         if (ReferenceEquals(target, this))
             return false;
@@ -592,13 +592,84 @@ public class TabsControl : TabControl
             return false;
 
         bool removedItemWasSelected = Equals(SelectedItem, item);
+        int targetInsertIndex = target.ResolveInsertIndexFromScreenPoint(dropScreenPoint);
 
         sourceItems.RemoveAt(sourceIndex);
 
-        targetItems.Add(item);
+        targetItems.Insert(targetInsertIndex, item);
         target.SelectedItem = item;
 
         HandleSourceItemsChangedAfterTransfer(sourceItems, sourceIndex, removedItemWasSelected);
+
+        return true;
+    }
+
+
+    private int ResolveInsertIndexFromScreenPoint(Point screenPoint)
+    {
+        if (ItemsSource is not IList targetItems)
+            return 0;
+
+        int maxIndex = targetItems.Count;
+        int minIndex = Math.Min(FixedHeaderCount, maxIndex);
+
+        var orderedTabs = DragTabItems()
+            .OrderBy(tab => tab.LogicalIndex)
+            .ToList();
+
+        if (orderedTabs.Count == 0)
+            return minIndex;
+
+        double pointerPosition = GetPointerPrimaryAxis(screenPoint);
+
+        foreach (DragTabItem tab in orderedTabs)
+        {
+            if (tab.LogicalIndex < FixedHeaderCount)
+                continue;
+
+            if (!TryGetTabBoundsInScreen(tab, out Rect tabBounds))
+                continue;
+
+            if (pointerPosition < GetRectMidpoint(tabBounds))
+                return Math.Clamp(tab.LogicalIndex, minIndex, maxIndex);
+        }
+
+        return maxIndex;
+    }
+
+
+    private double GetPointerPrimaryAxis(Point screenPoint) =>
+        TabStripPlacement is Dock.Left or Dock.Right ? screenPoint.Y : screenPoint.X;
+
+
+    private double GetRectMidpoint(Rect rect) =>
+        TabStripPlacement is Dock.Left or Dock.Right
+            ? rect.Y + rect.Height / 2
+            : rect.X + rect.Width / 2;
+
+
+    private static bool TryGetTabBoundsInScreen(Control tab, out Rect bounds)
+    {
+        bounds = default;
+
+        TopLevel? topLevel = TopLevel.GetTopLevel(tab);
+
+        if (topLevel is null)
+            return false;
+
+        Point? topLeftInTopLevel = tab.TranslatePoint(new Point(0, 0), topLevel);
+
+        if (topLeftInTopLevel is null)
+            return false;
+
+        PixelPoint topLeftScreen = topLevel.PointToScreen(topLeftInTopLevel.Value);
+        PixelPoint bottomRightScreen = topLevel.PointToScreen(topLeftInTopLevel.Value + new Vector(tab.Bounds.Width, tab.Bounds.Height));
+
+        bounds = new Rect(
+            x: topLeftScreen.X,
+            y: topLeftScreen.Y,
+            width: Math.Max(1, bottomRightScreen.X - topLeftScreen.X),
+            height: Math.Max(1, bottomRightScreen.Y - topLeftScreen.Y));
 
         return true;
     }
