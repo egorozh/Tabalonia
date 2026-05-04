@@ -17,6 +17,8 @@ public class LeftPressedThumb : TemplatedControl
 
     
     private Point? _lastPoint;
+
+    public Point? LastScreenPoint { get; private set; }
     
 
     public event EventHandler<VectorEventArgs>? DragStarted
@@ -52,6 +54,7 @@ public class LeftPressedThumb : TemplatedControl
             };
 
             _lastPoint = null;
+            LastScreenPoint = null;
 
             RaiseEvent(ev);
         }
@@ -63,6 +66,8 @@ public class LeftPressedThumb : TemplatedControl
     {
         if (!IsLeftButtonPressed(e))
             return;
+
+        LastScreenPoint = GetScreenPoint(e);
         
         if (_lastPoint.HasValue)
         {
@@ -82,7 +87,9 @@ public class LeftPressedThumb : TemplatedControl
             return;
         
         e.Handled = true;
+        e.Pointer.Capture(this);
         _lastPoint = e.GetPosition(this);
+        LastScreenPoint = GetScreenPoint(e);
 
         var ev = new VectorEventArgs
         {
@@ -98,13 +105,12 @@ public class LeftPressedThumb : TemplatedControl
     
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        if (!IsLeftButtonPressed(e))
-            return;
-        
         if (_lastPoint.HasValue)
         {
             e.Handled = true;
             _lastPoint = null;
+            LastScreenPoint = GetScreenPoint(e);
+            e.Pointer.Capture(null);
 
             var ev = new VectorEventArgs
             {
@@ -113,6 +119,8 @@ public class LeftPressedThumb : TemplatedControl
             };
 
             RaiseEvent(ev);
+
+            LastScreenPoint = null;
         }
     }
 
@@ -122,6 +130,20 @@ public class LeftPressedThumb : TemplatedControl
         var point = args.GetCurrentPoint(this);
         
         return point.Properties.IsLeftButtonPressed;
+    }
+
+
+    private Point? GetScreenPoint(PointerEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        if (topLevel is null)
+            return null;
+
+        Point pointInTopLevel = e.GetPosition(topLevel);
+        PixelPoint screenPoint = topLevel.PointToScreen(pointInTopLevel);
+
+        return new Point(screenPoint.X, screenPoint.Y);
     }
     
     

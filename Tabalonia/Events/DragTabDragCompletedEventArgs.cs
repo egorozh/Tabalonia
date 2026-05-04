@@ -11,10 +11,22 @@ public class DragTabDragCompletedEventArgs : DragTabItemEventArgs
         //DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
     }
 
+    public DragTabDragCompletedEventArgs(DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs, Point? screenPoint)
+        : this(dragItem, dragCompletedEventArgs)
+    {
+        ScreenPoint = screenPoint;
+    }
+
     public DragTabDragCompletedEventArgs(RoutedEvent routedEvent, DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs)
         : base(routedEvent, dragItem)
     {
         //DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
+    }
+
+    public DragTabDragCompletedEventArgs(RoutedEvent routedEvent, DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs, Point? screenPoint)
+        : this(routedEvent, dragItem, dragCompletedEventArgs)
+    {
+        ScreenPoint = screenPoint;
     }
 
     public DragTabDragCompletedEventArgs(RoutedEvent routedEvent, Interactive source, DragTabItem dragItem, VectorEventArgs dragCompletedEventArgs)
@@ -24,6 +36,19 @@ public class DragTabDragCompletedEventArgs : DragTabItemEventArgs
         //DragCompletedEventArgs = dragCompletedEventArgs ?? throw new ArgumentNullException(nameof(dragCompletedEventArgs));
     }
 
+    public DragTabDragCompletedEventArgs(
+        RoutedEvent routedEvent,
+        Interactive source,
+        DragTabItem dragItem,
+        VectorEventArgs dragCompletedEventArgs,
+        Point? screenPoint)
+        : this(routedEvent, source, dragItem, dragCompletedEventArgs)
+    {
+        ScreenPoint = screenPoint;
+    }
+
 
     //public VectorEventArgs DragCompletedEventArgs { get; }
+
+    public Point? ScreenPoint { get; }
 }
