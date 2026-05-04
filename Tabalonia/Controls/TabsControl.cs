@@ -33,6 +33,9 @@ public class TabsControl : TabControl
     private object? _draggedTabModel;
     private bool _dragging;
     private bool _skipMoveTabModelsOnDragCompleted;
+    private bool _isDetachedHost;
+    private Window? _draggedHostWindow;
+    private Vector? _draggedHostWindowPointerOffset;
 
     private Control? _topPanel;
     private readonly EventHandler<CloseLastTabEventArgs> _defaultLastTabClosedAction;
@@ -424,6 +427,7 @@ public class TabsControl : TabControl
         _draggedItem = e.TabItem;
         _draggedTabModel = ItemFromContainer(_draggedItem);
         _skipMoveTabModelsOnDragCompleted = false;
+        BeginDetachedHostDrag(e.ScreenPoint);
 
         e.Handled = true;
 
@@ -445,6 +449,8 @@ public class TabsControl : TabControl
     {
         if (_draggedItem is null)
             throw new Exception($"{nameof(TabsControl)}.{nameof(ItemDragDelta)} - _draggedItem is null");
+
+        MoveDetachedHostWindow(e.ScreenPoint, e.DragDeltaEventArgs.Vector);
 
         if (_draggedItem.LogicalIndex < FixedHeaderCount)
         {
@@ -485,6 +491,7 @@ public class TabsControl : TabControl
         Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
 
         _dragging = false;
+        ResetDetachedHostDragState();
     }
 
 
@@ -508,6 +515,7 @@ public class TabsControl : TabControl
             _skipMoveTabModelsOnDragCompleted = false;
             _draggedItem = null;
             _draggedTabModel = null;
+            ResetDetachedHostDragState();
             return;
         }
 
@@ -515,6 +523,57 @@ public class TabsControl : TabControl
 
         _draggedItem = null;
         _draggedTabModel = null;
+        ResetDetachedHostDragState();
+    }
+
+
+    private void BeginDetachedHostDrag(Point? screenPoint)
+    {
+        ResetDetachedHostDragState();
+
+        if (!_isDetachedHost)
+            return;
+
+        Window? hostWindow = GetThisWindow();
+
+        if (hostWindow is null)
+            return;
+
+        _draggedHostWindow = hostWindow;
+
+        if (screenPoint is null)
+            return;
+
+        PixelPoint hostPosition = hostWindow.Position;
+        _draggedHostWindowPointerOffset = new Vector(
+            x: screenPoint.Value.X - hostPosition.X,
+            y: screenPoint.Value.Y - hostPosition.Y);
+    }
+
+
+    private void MoveDetachedHostWindow(Point? screenPoint, Vector dragVector)
+    {
+        if (_draggedHostWindow is null)
+            return;
+
+        if (screenPoint is { } pointerScreenPoint && _draggedHostWindowPointerOffset is { } pointerOffset)
+        {
+            _draggedHostWindow.Position = new PixelPoint(
+                x: (int)Math.Round(pointerScreenPoint.X - pointerOffset.X),
+                y: (int)Math.Round(pointerScreenPoint.Y - pointerOffset.Y));
+
+            return;
+        }
+
+        // Fallback when screen coordinates are unavailable for the current pointer update.
+        _draggedHostWindow.DragWindow(dragVector.X, dragVector.Y);
+    }
+
+
+    private void ResetDetachedHostDragState()
+    {
+        _draggedHostWindow = null;
+        _draggedHostWindowPointerOffset = null;
     }
 
 
@@ -553,7 +612,7 @@ public class TabsControl : TabControl
         if (!EnableTabAttaching || e.ScreenPoint is null)
             return false;
 
-        if (!TryFindDropTarget(e.ScreenPoint.Value, out TabsControl? target) || target == this)
+        if (!TryFindDropTarget(e.ScreenPoint.Value, this, out TabsControl? target))
             return false;
 
         if (_draggedTabModel is null)
@@ -737,6 +796,8 @@ public class TabsControl : TabControl
             DataContext = DataContext
         };
 
+        detachedTabsControl._isDetachedHost = true;
+
         detachedTabsControl.LastTabClosedAction = LastTabClosedAction == _defaultLastTabClosedAction
             ? detachedTabsControl._defaultLastTabClosedAction
             : LastTabClosedAction;
@@ -801,12 +862,15 @@ public class TabsControl : TabControl
     }
 
 
-    private bool TryFindDropTarget(Point screenPoint, out TabsControl? target)
+    private bool TryFindDropTarget(Point screenPoint, TabsControl? excludedControl, out TabsControl? target)
     {
         target = null;
 
         foreach (TabsControl tabsControl in EnumerateRegisteredTabsControls())
         {
+            if (ReferenceEquals(tabsControl, excludedControl))
+                continue;
+
             if (!tabsControl.EnableTabAttaching)
                 continue;
 
