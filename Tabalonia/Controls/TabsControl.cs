@@ -32,6 +32,7 @@ public class TabsControl : TabControl
     private DragTabItem? _draggedItem;
     private object? _draggedTabModel;
     private bool _dragging;
+    private bool _isDetachedHost;
     private bool _skipMoveTabModelsOnDragCompleted;
     private Point? _lastKnownDragScreenPoint;
     private TabsControl? _dragSessionSourceHost;
@@ -456,7 +457,7 @@ public class TabsControl : TabControl
         {
             _lastKnownDragScreenPoint = screenPoint;
 
-            if (ReferenceEquals(_dragSessionSourceHost, this))
+            if (ReferenceEquals(_dragSessionSourceHost, this) && !_isDetachedHost)
                 TryDetachDuringDrag(screenPoint);
 
             MoveDragSessionWindow(screenPoint);
@@ -496,7 +497,7 @@ public class TabsControl : TabControl
         bool sourceDetachedDuringDrag = !ReferenceEquals(sourceHost, this);
         bool transferredBetweenHosts = TryTransferToAnotherHost(releaseScreenPoint, sourceHost);
 
-        if (!transferredBetweenHosts && !sourceDetachedDuringDrag)
+        if (!transferredBetweenHosts && !sourceDetachedDuringDrag && !sourceHost._isDetachedHost)
             transferredBetweenHosts = TryDetachToNewWindow(releaseScreenPoint);
 
         if (!transferredBetweenHosts && sourceDetachedDuringDrag)
@@ -841,6 +842,8 @@ public class TabsControl : TabControl
             ItemsSource = new ObservableCollection<object?>(),
             DataContext = DataContext
         };
+
+        detachedTabsControl._isDetachedHost = true;
 
 
         detachedTabsControl.LastTabClosedAction = LastTabClosedAction == _defaultLastTabClosedAction
