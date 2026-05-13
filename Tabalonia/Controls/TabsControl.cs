@@ -445,6 +445,19 @@ public class TabsControl : TabControl
 
             SelectedItem = item;
         }
+
+        if (IsDetachedSingleTabHost() && e.ScreenPoint is { } dragStartScreenPoint)
+        {
+            Window? hostWindow = GetThisWindow();
+
+            if (hostWindow is not null)
+            {
+                _dragSessionWindow = hostWindow;
+                _dragSessionWindowPointerOffset = new Vector(
+                    x: dragStartScreenPoint.X - hostWindow.Position.X,
+                    y: dragStartScreenPoint.Y - hostWindow.Position.Y);
+            }
+        }
     }
 
 
@@ -457,10 +470,16 @@ public class TabsControl : TabControl
         {
             _lastKnownDragScreenPoint = screenPoint;
 
-            if (ReferenceEquals(_dragSessionSourceHost, this) && !_isDetachedHost)
+            if (ReferenceEquals(_dragSessionSourceHost, this) && !IsDetachedSingleTabHost())
                 TryDetachDuringDrag(screenPoint);
 
             MoveDragSessionWindow(screenPoint);
+        }
+
+        if (IsDetachedSingleTabHost() && _dragSessionWindow is not null)
+        {
+            e.Handled = true;
+            return;
         }
 
         if (!ReferenceEquals(_dragSessionSourceHost, this))
@@ -497,7 +516,7 @@ public class TabsControl : TabControl
         bool sourceDetachedDuringDrag = !ReferenceEquals(sourceHost, this);
         bool transferredBetweenHosts = TryTransferToAnotherHost(releaseScreenPoint, sourceHost);
 
-        if (!transferredBetweenHosts && !sourceDetachedDuringDrag && !sourceHost._isDetachedHost)
+        if (!transferredBetweenHosts && !sourceDetachedDuringDrag && !sourceHost.IsDetachedSingleTabHost())
             transferredBetweenHosts = TryDetachToNewWindow(releaseScreenPoint);
 
         if (!transferredBetweenHosts && sourceDetachedDuringDrag)
@@ -667,6 +686,10 @@ public class TabsControl : TabControl
         _dragSessionWindow = null;
         _dragSessionWindowPointerOffset = null;
     }
+
+
+    private bool IsDetachedSingleTabHost() =>
+        _isDetachedHost && ItemsSource is IList items && items.Count == 1;
 
 
     private bool MoveItemToAnotherTabsControl(object item, TabsControl target, Point dropScreenPoint)
