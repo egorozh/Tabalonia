@@ -949,7 +949,7 @@ public class TabsControl : TabControl
             MinWidth = sourceWindow?.MinWidth ?? 320,
             MinHeight = sourceWindow?.MinHeight ?? 240,
             Background = sourceWindow?.Background,
-            SystemDecorations = sourceWindow?.SystemDecorations ?? SystemDecorations.Full,
+            WindowDecorations = sourceWindow?.WindowDecorations ?? WindowDecorations.Full,
             ExtendClientAreaToDecorationsHint = sourceWindow?.ExtendClientAreaToDecorationsHint ?? false,
             Content = detachedTabsControl,
             DataContext = detachedTabsControl.DataContext,
