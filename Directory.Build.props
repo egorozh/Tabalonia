@@ -1,0 +1,12 @@
+<Project>
+
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <AvaloniaVersion>12.0.5</AvaloniaVersion>
+    </PropertyGroup>
+
+</Project>

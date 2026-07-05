@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>preview</LangVersion>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
         <IsAotCompatible>true</IsAotCompatible>
 
         <Version>0.12.0</Version>
@@ -16,10 +13,16 @@
         <Description>Tab Control with draggable tabs for Avalonia</Description>
         <PackageIcon>Icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageReleaseNotes>Supported a light mode for the custom theme</PackageReleaseNotes>
+        <PackageReleaseNotes>See https://github.com/egorozh/Tabalonia/blob/main/CHANGELOG.md</PackageReleaseNotes>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
 
+    <PropertyGroup Label="SourceLink">
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="12.0.0" />

@@ -1,0 +1,3 @@
+# Test naming convention uses underscores (xunit style)
+[*.cs]
+dotnet_diagnostic.CA1707.severity = none

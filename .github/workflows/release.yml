@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Verify tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          CSPROJ_VERSION=$(grep -oPm1 '(?<=<Version>)[^<]+' Tabalonia/Tabalonia.csproj)
+          if [ "$TAG_VERSION" != "$CSPROJ_VERSION" ]; then
+            echo "Tag v$TAG_VERSION does not match csproj version $CSPROJ_VERSION"
+            exit 1
+          fi
+
+      - name: Build
+        run: dotnet build Tabalonia/Tabalonia.csproj --configuration Release
+
+      - name: Test
+        run: dotnet test Tabalonia.Tests/Tabalonia.Tests.csproj --configuration Release
+
+      - name: Pack
+        run: dotnet pack Tabalonia/Tabalonia.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Push to NuGet
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

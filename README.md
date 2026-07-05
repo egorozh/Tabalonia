@@ -1,12 +1,13 @@
 # Tabalonia
 
 [![Nuget](https://img.shields.io/nuget/v/Tabalonia?label=Tabalonia)](https://www.nuget.org/packages/Tabalonia)
+[![Build](https://github.com/egorozh/Tabalonia/actions/workflows/build.yml/badge.svg)](https://github.com/egorozh/Tabalonia/actions/workflows/build.yml)
 
 Draggable tab items on Avalonia here!
 
 This is a port of the [Draggablz](https://github.com/ButchersBoy/Dragablz)
 
-![example](https://github.com/egorozh/Tabalonia/blob/main/workflows/demo.gif "Example application")
+![example](https://github.com/egorozh/Tabalonia/blob/main/docs/demo.gif "Example application")
 
 ### Getting Started
 
