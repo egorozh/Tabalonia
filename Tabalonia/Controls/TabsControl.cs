@@ -813,7 +813,21 @@ public class TabsControl : TabControl
 
         ClearDragVisualFlags();
 
+        target.BringHostWindowToFront();
+
         target.MarkDraggedItemStateDeferred(model, screenPoint);
+    }
+
+
+    /// <summary>
+    /// Raises this control's host window above the other windows so that a tab attached to a
+    /// background strip becomes visible. The active drag keeps running: pointer capture is held by
+    /// the source controller, so events keep flowing there even after another window is activated.
+    /// </summary>
+    private void BringHostWindowToFront()
+    {
+        if (GetThisWindow() is { } window)
+            window.Activate();
     }
 
 

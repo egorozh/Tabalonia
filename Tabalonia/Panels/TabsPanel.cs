@@ -240,16 +240,26 @@ public class TabsPanel : Panel
         
     private IEnumerable<LocationInfo> GetLocations(IEnumerable<DragTabItem> allItems, DragTabItem dragItem)
     {
+        // _itemsLocations is a snapshot from the last non-drag ArrangeImpl. When the children
+        // change while the panel is mid-drag (e.g. a tab is transferred in/out during a
+        // cross-window drag session) an item may be missing from it, so fall back to its live
+        // position (loc) instead of indexing the stale cache and throwing.
+        double DragItemStart()
+        {
+            if (_itemsLocations.TryGetValue(dragItem, out var dragItemInfo))
+                return dragItemInfo.Start;
+
+            return GetLocationInfo(dragItem).Start;
+        }
+
+        double dragItemStart = DragItemStart();
+
         double OrderSelector(LocationInfo loc)
         {
             if (Equals(loc.Item, dragItem))
-            {
-                var dragItemInfo = _itemsLocations[dragItem];
-                    
-                return loc.Start > dragItemInfo.Start ? loc.End : loc.Start;
-            }
+                return loc.Start > dragItemStart ? loc.End : loc.Start;
 
-            return _itemsLocations[loc.Item].Mid;
+            return _itemsLocations.TryGetValue(loc.Item, out var info) ? info.Mid : loc.Mid;
         }
 
         var currentLocations = allItems
