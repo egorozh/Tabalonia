@@ -148,19 +148,19 @@ public class DragTabItem : TabItem
 
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
-        RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args));
+        RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args, _thumb.LastScreenPoint));
     }
 
     
     private void ThumbOnDragDelta(object? sender, VectorEventArgs e)
     {
-        var previewEventArgs = new DragTabDragDeltaEventArgs(PreviewDragDelta, this, e);
+        var previewEventArgs = new DragTabDragDeltaEventArgs(PreviewDragDelta, this, e, _thumb.LastScreenPoint);
         RaiseEvent(previewEventArgs);
         // if (previewEventArgs.Cancel)
         //     _thumb.CancelDrag();
         if (!previewEventArgs.Handled)
         {
-            var eventArgs = new DragTabDragDeltaEventArgs(DragDelta, this, e);
+            var eventArgs = new DragTabDragDeltaEventArgs(DragDelta, this, e, _thumb.LastScreenPoint);
             RaiseEvent(eventArgs);
             //if (eventArgs.Cancel)
             //    thumb.CancelDrag();
@@ -170,7 +170,7 @@ public class DragTabItem : TabItem
     
     private void ThumbOnDragCompleted(object? sender, VectorEventArgs e)
     {
-        var args = new DragTabDragCompletedEventArgs(DragCompleted, this, e);
+        var args = new DragTabDragCompletedEventArgs(DragCompleted, this, e, _thumb.LastScreenPoint);
         RaiseEvent(args);
     }
 }

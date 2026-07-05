@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Tabalonia.Events;
 using Tabalonia.Panels;
@@ -25,8 +26,21 @@ public class TabsControl : TabControl
 
     private readonly TabsPanel _tabsPanel;
 
+    private static readonly object RegistryLock = new();
+    private static readonly List<WeakReference<TabsControl>> RegisteredTabsControls = new();
+
     private DragTabItem? _draggedItem;
+    private object? _draggedTabModel;
     private bool _dragging;
+    private bool _isDetachedHost;
+    private bool _skipMoveTabModelsOnDragCompleted;
+    private Point? _lastKnownDragScreenPoint;
+    private TabsControl? _dragSessionSourceHost;
+    private Window? _dragSessionWindow;
+    private Vector? _dragSessionWindowPointerOffset;
+
+    private Control? _topPanel;
+    private readonly EventHandler<CloseLastTabEventArgs> _defaultLastTabClosedAction;
 
     private ICommand _addItemCommand;
     private ICommand _closeItemCommand;
@@ -105,6 +119,18 @@ public class TabsControl : TabControl
     
     public static readonly StyledProperty<object?> RightContentProperty =
         AvaloniaProperty.Register<TabsControl, object?>(nameof(RightContent));
+
+    public static readonly StyledProperty<bool> EnableTabDetachingProperty =
+        AvaloniaProperty.Register<TabsControl, bool>(nameof(EnableTabDetaching), defaultValue: true);
+
+    public static readonly StyledProperty<bool> EnableTabAttachingProperty =
+        AvaloniaProperty.Register<TabsControl, bool>(nameof(EnableTabAttaching), defaultValue: true);
+
+    public static readonly StyledProperty<double> DetachTriggerDistanceProperty =
+        AvaloniaProperty.Register<TabsControl, double>(nameof(DetachTriggerDistance), defaultValue: 32d);
+
+    public static readonly StyledProperty<Func<TabsControl, Window>?> DetachedWindowFactoryProperty =
+        AvaloniaProperty.Register<TabsControl, Func<TabsControl, Window>?>(nameof(DetachedWindowFactory));
     
     #endregion
 
@@ -127,7 +153,8 @@ public class TabsControl : TabControl
 
         ItemsPanel = new FuncTemplate<Panel>(() => _tabsPanel);
 
-        LastTabClosedAction = (_, _) => GetThisWindow()?.Close();
+        _defaultLastTabClosedAction = CreateDefaultLastTabClosedAction();
+        LastTabClosedAction = _defaultLastTabClosedAction;
 
         _addItemCommand = new SimpleActionCommand(AddItem);
         _closeItemCommand = new SimpleParamActionCommand(CloseItem);
@@ -249,6 +276,42 @@ public class TabsControl : TabControl
         get => GetValue(RightContentProperty);
         set => SetValue(RightContentProperty, value);
     }
+
+    /// <summary>
+    /// Enables creating a new host window when a tab drag ends outside of any registered tab strip.
+    /// </summary>
+    public bool EnableTabDetaching
+    {
+        get => GetValue(EnableTabDetachingProperty);
+        set => SetValue(EnableTabDetachingProperty, value);
+    }
+
+    /// <summary>
+    /// Enables dropping a dragged tab into another <see cref="TabsControl"/>.
+    /// </summary>
+    public bool EnableTabAttaching
+    {
+        get => GetValue(EnableTabAttachingProperty);
+        set => SetValue(EnableTabAttachingProperty, value);
+    }
+
+    /// <summary>
+    /// Screen-space tolerance around the tab strip where drag release is still treated as in-strip.
+    /// </summary>
+    public double DetachTriggerDistance
+    {
+        get => GetValue(DetachTriggerDistanceProperty);
+        set => SetValue(DetachTriggerDistanceProperty, value);
+    }
+
+    /// <summary>
+    /// Optional factory to create a host window for a detached tab.
+    /// </summary>
+    public Func<TabsControl, Window>? DetachedWindowFactory
+    {
+        get => GetValue(DetachedWindowFactoryProperty);
+        set => SetValue(DetachedWindowFactoryProperty, value);
+    }
     
     #endregion
 
@@ -258,6 +321,8 @@ public class TabsControl : TabControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+
+        _topPanel = e.NameScope.Get<Control>("PART_TopPanel");
 
         var leftDragWindowThumb = e.NameScope.Get<Thumb>("PART_LeftDragWindowThumb");
         leftDragWindowThumb.AddHandler(PointerPressedEvent, OnThumbBeginDrag, handledEventsToo: true);
@@ -272,6 +337,20 @@ public class TabsControl : TabControl
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey) =>
         new DragTabItem();
+
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        RegisterTabsControl(this);
+    }
+
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        UnregisterTabsControl(this);
+        base.OnDetachedFromVisualTree(e);
+    }
 
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -348,6 +427,10 @@ public class TabsControl : TabControl
     private void ItemDragStarted(object? sender, DragTabDragStartedEventArgs e)
     {
         _draggedItem = e.TabItem;
+        _draggedTabModel = ItemFromContainer(_draggedItem);
+        _lastKnownDragScreenPoint = e.ScreenPoint;
+        _dragSessionSourceHost = this;
+        _skipMoveTabModelsOnDragCompleted = false;
 
         e.Handled = true;
 
@@ -362,6 +445,19 @@ public class TabsControl : TabControl
 
             SelectedItem = item;
         }
+
+        if (IsDetachedSingleTabHost() && e.ScreenPoint is { } dragStartScreenPoint)
+        {
+            Window? hostWindow = GetThisWindow();
+
+            if (hostWindow is not null)
+            {
+                _dragSessionWindow = hostWindow;
+                _dragSessionWindowPointerOffset = new Vector(
+                    x: dragStartScreenPoint.X - hostWindow.Position.X,
+                    y: dragStartScreenPoint.Y - hostWindow.Position.Y);
+            }
+        }
     }
 
 
@@ -369,6 +465,28 @@ public class TabsControl : TabControl
     {
         if (_draggedItem is null)
             throw new Exception($"{nameof(TabsControl)}.{nameof(ItemDragDelta)} - _draggedItem is null");
+
+        if (e.ScreenPoint is { } screenPoint)
+        {
+            _lastKnownDragScreenPoint = screenPoint;
+
+            if (ReferenceEquals(_dragSessionSourceHost, this) && !IsDetachedSingleTabHost())
+                TryDetachDuringDrag(screenPoint);
+
+            MoveDragSessionWindow(screenPoint);
+        }
+
+        if (IsDetachedSingleTabHost() && _dragSessionWindow is not null)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        if (!ReferenceEquals(_dragSessionSourceHost, this))
+        {
+            e.Handled = true;
+            return;
+        }
 
         if (_draggedItem.LogicalIndex < FixedHeaderCount)
         {
@@ -393,15 +511,33 @@ public class TabsControl : TabControl
 
     private void ItemDragCompleted(object? sender, DragTabDragCompletedEventArgs e)
     {
+        Point? releaseScreenPoint = e.ScreenPoint ?? _lastKnownDragScreenPoint;
+        TabsControl sourceHost = _dragSessionSourceHost ?? this;
+        bool sourceDetachedDuringDrag = !ReferenceEquals(sourceHost, this);
+        bool transferredBetweenHosts = TryTransferToAnotherHost(releaseScreenPoint, sourceHost);
+
+        if (!transferredBetweenHosts && !sourceDetachedDuringDrag && !sourceHost.IsDetachedSingleTabHost())
+            transferredBetweenHosts = TryDetachToNewWindow(releaseScreenPoint);
+
+        if (!transferredBetweenHosts && sourceDetachedDuringDrag)
+            transferredBetweenHosts = true;
+
+        _skipMoveTabModelsOnDragCompleted = transferredBetweenHosts;
+
         foreach (var item in DragTabItems())
         {
             item.IsDragging = false;
             item.IsSiblingDragging = false;
         }
 
+        if (sourceDetachedDuringDrag)
+            sourceHost.EndExternalDragVisualState();
+
         Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
 
         _dragging = false;
+        _lastKnownDragScreenPoint = null;
+        ResetDragSession();
     }
 
 
@@ -420,14 +556,30 @@ public class TabsControl : TabControl
 
     private void TabsPanelOnDragCompleted()
     {
+        if (_skipMoveTabModelsOnDragCompleted)
+        {
+            _skipMoveTabModelsOnDragCompleted = false;
+            _draggedItem = null;
+            _draggedTabModel = null;
+            _lastKnownDragScreenPoint = null;
+            ResetDragSession();
+            return;
+        }
+
         MoveTabModelsIfNeeded();
 
         _draggedItem = null;
+        _draggedTabModel = null;
+        _lastKnownDragScreenPoint = null;
+        ResetDragSession();
     }
 
 
     private void MoveTabModelsIfNeeded()
     {
+        if (_draggedItem is null)
+            return;
+
         object? item = ItemFromContainer(_draggedItem);
 
         if (item != null)
@@ -448,6 +600,480 @@ public class TabsControl : TabControl
                     foreach (var dragTabItem in DragTabItems())
                         dragTabItem.LogicalIndex = i++;
                 }
+            }
+        }
+    }
+
+
+    private bool TryTransferToAnotherHost(Point? releaseScreenPoint, TabsControl sourceHost)
+    {
+        if (!EnableTabAttaching || !sourceHost.EnableTabAttaching || releaseScreenPoint is null)
+            return false;
+
+        if (!TryFindDropTarget(releaseScreenPoint.Value, sourceHost, out TabsControl? target))
+            return false;
+
+        if (_draggedTabModel is null)
+            return false;
+
+        if (target is null)
+            return false;
+
+        return sourceHost.MoveItemToAnotherTabsControl(_draggedTabModel, target, releaseScreenPoint.Value);
+    }
+
+
+    private bool TryDetachToNewWindow(Point? releaseScreenPoint)
+    {
+        if (!EnableTabDetaching || releaseScreenPoint is null)
+            return false;
+
+        if (!ShouldDetachForScreenPoint(releaseScreenPoint.Value))
+            return false;
+
+        if (_draggedTabModel is null)
+            return false;
+
+        return DetachItemToNewWindow(_draggedTabModel, releaseScreenPoint.Value);
+    }
+
+
+    private void TryDetachDuringDrag(Point screenPoint)
+    {
+        if (_draggedTabModel is null || !EnableTabDetaching)
+            return;
+
+        if (!ShouldDetachForScreenPoint(screenPoint))
+            return;
+
+        if (DetachItemToNewWindow(_draggedTabModel, screenPoint, fromDragSession: true, out TabsControl? detachedHost, out Window? detachedWindow))
+        {
+            if (detachedHost is null || detachedWindow is null)
+                return;
+
+            _dragSessionSourceHost = detachedHost;
+            _dragSessionWindow = detachedWindow;
+            _dragSessionWindowPointerOffset = new Vector(120, 20);
+            _skipMoveTabModelsOnDragCompleted = true;
+            _dragging = false;
+
+            foreach (var item in DragTabItems())
+            {
+                item.IsDragging = false;
+                item.IsSiblingDragging = false;
+            }
+
+            Dispatcher.UIThread.Post(() => detachedHost.MarkDraggedItemState(_draggedTabModel), DispatcherPriority.Loaded);
+        }
+    }
+
+
+    private void MoveDragSessionWindow(Point screenPoint)
+    {
+        if (_dragSessionWindow is null)
+            return;
+
+        Vector pointerOffset = _dragSessionWindowPointerOffset ?? new Vector(120, 20);
+        _dragSessionWindow.Position = new PixelPoint(
+            x: (int)Math.Round(screenPoint.X - pointerOffset.X),
+            y: (int)Math.Round(screenPoint.Y - pointerOffset.Y));
+    }
+
+
+    private void ResetDragSession()
+    {
+        _dragSessionSourceHost = null;
+        _dragSessionWindow = null;
+        _dragSessionWindowPointerOffset = null;
+    }
+
+
+    private bool IsDetachedSingleTabHost() =>
+        _isDetachedHost && ItemsSource is IList items && items.Count == 1;
+
+
+    private bool MoveItemToAnotherTabsControl(object item, TabsControl target, Point dropScreenPoint)
+    {
+        if (ReferenceEquals(target, this))
+            return false;
+
+        if (ItemsSource is not IList sourceItems || target.ItemsSource is not IList targetItems)
+            return false;
+
+        int sourceIndex = sourceItems.IndexOf(item);
+
+        if (sourceIndex < 0)
+            return false;
+
+        bool removedItemWasSelected = Equals(SelectedItem, item);
+        int targetInsertIndex = target.ResolveInsertIndexFromScreenPoint(dropScreenPoint);
+
+        sourceItems.RemoveAt(sourceIndex);
+
+        targetItems.Insert(targetInsertIndex, item);
+        target.SelectedItem = item;
+
+        HandleSourceItemsChangedAfterTransfer(sourceItems, sourceIndex, removedItemWasSelected);
+
+        return true;
+    }
+
+
+    private int ResolveInsertIndexFromScreenPoint(Point screenPoint)
+    {
+        if (ItemsSource is not IList targetItems)
+            return 0;
+
+        int maxIndex = targetItems.Count;
+        int minIndex = Math.Min(FixedHeaderCount, maxIndex);
+
+        var orderedTabs = DragTabItems()
+            .OrderBy(tab => tab.LogicalIndex)
+            .ToList();
+
+        if (orderedTabs.Count == 0)
+            return minIndex;
+
+        double pointerPosition = GetPointerPrimaryAxis(screenPoint);
+
+        foreach (DragTabItem tab in orderedTabs)
+        {
+            if (tab.LogicalIndex < FixedHeaderCount)
+                continue;
+
+            if (!TryGetTabBoundsInScreen(tab, out Rect tabBounds))
+                continue;
+
+            if (pointerPosition < GetRectMidpoint(tabBounds))
+                return Math.Clamp(tab.LogicalIndex, minIndex, maxIndex);
+        }
+
+        return maxIndex;
+    }
+
+
+    private double GetPointerPrimaryAxis(Point screenPoint) =>
+        TabStripPlacement is Dock.Left or Dock.Right ? screenPoint.Y : screenPoint.X;
+
+
+    private double GetRectMidpoint(Rect rect) =>
+        TabStripPlacement is Dock.Left or Dock.Right
+            ? rect.Y + rect.Height / 2
+            : rect.X + rect.Width / 2;
+
+
+    private static bool TryGetTabBoundsInScreen(Control tab, out Rect bounds)
+    {
+        bounds = default;
+
+        TopLevel? topLevel = TopLevel.GetTopLevel(tab);
+
+        if (topLevel is null)
+            return false;
+
+        Point? topLeftInTopLevel = tab.TranslatePoint(new Point(0, 0), topLevel);
+
+        if (topLeftInTopLevel is null)
+            return false;
+
+        PixelPoint topLeftScreen = topLevel.PointToScreen(topLeftInTopLevel.Value);
+        PixelPoint bottomRightScreen = topLevel.PointToScreen(topLeftInTopLevel.Value + new Vector(tab.Bounds.Width, tab.Bounds.Height));
+
+        bounds = new Rect(
+            x: topLeftScreen.X,
+            y: topLeftScreen.Y,
+            width: Math.Max(1, bottomRightScreen.X - topLeftScreen.X),
+            height: Math.Max(1, bottomRightScreen.Y - topLeftScreen.Y));
+
+        return true;
+    }
+
+
+    private bool DetachItemToNewWindow(object item, Point releaseScreenPoint) =>
+        DetachItemToNewWindow(item, releaseScreenPoint, fromDragSession: false, out _, out _);
+
+
+    private bool DetachItemToNewWindow(
+        object item,
+        Point releaseScreenPoint,
+        bool fromDragSession,
+        out TabsControl? detachedTabsControl,
+        out Window? detachedWindow)
+    {
+        detachedTabsControl = null;
+        detachedWindow = null;
+
+        if (ItemsSource is not IList sourceItems)
+            return false;
+
+        int sourceIndex = sourceItems.IndexOf(item);
+
+        if (sourceIndex < 0)
+            return false;
+
+        detachedTabsControl = CreateDetachedTabsControl();
+
+        if (detachedTabsControl.ItemsSource is not IList detachedItems)
+            return false;
+
+        bool removedItemWasSelected = Equals(SelectedItem, item);
+
+        sourceItems.RemoveAt(sourceIndex);
+
+        detachedItems.Add(item);
+        detachedTabsControl.SelectedItem = item;
+
+        detachedWindow = DetachedWindowFactory?.Invoke(detachedTabsControl)
+                         ?? CreateDefaultDetachedWindow(detachedTabsControl);
+
+        detachedWindow.Position = new PixelPoint(
+            x: (int)releaseScreenPoint.X - 120,
+            y: (int)releaseScreenPoint.Y - 20);
+
+        detachedWindow.Show();
+
+        if (fromDragSession)
+            detachedWindow.Activate();
+
+        HandleSourceItemsChangedAfterTransfer(sourceItems, sourceIndex, removedItemWasSelected);
+
+        return true;
+    }
+
+
+    private TabsControl CreateDetachedTabsControl()
+    {
+        var detachedTabsControl = new TabsControl
+        {
+            AdjacentHeaderItemOffset = AdjacentHeaderItemOffset,
+            TabItemWidth = TabItemWidth,
+            ShowDefaultCloseButton = ShowDefaultCloseButton,
+            ShowDefaultAddButton = ShowDefaultAddButton,
+            FixedHeaderCount = 0,
+            NewItemAsyncFactory = NewItemAsyncFactory,
+            NewItemFactory = NewItemFactory,
+            TabClosed = TabClosed,
+            TabClosing = TabClosing,
+            LeftThumbWidth = LeftThumbWidth,
+            RightThumbWidth = RightThumbWidth,
+            EnableTabDetaching = EnableTabDetaching,
+            EnableTabAttaching = EnableTabAttaching,
+            DetachTriggerDistance = DetachTriggerDistance,
+            DetachedWindowFactory = DetachedWindowFactory,
+            ItemTemplate = ItemTemplate,
+            ContentTemplate = ContentTemplate,
+            ItemsSource = new ObservableCollection<object?>(),
+            DataContext = DataContext
+        };
+
+        detachedTabsControl._isDetachedHost = true;
+
+
+        detachedTabsControl.LastTabClosedAction = LastTabClosedAction == _defaultLastTabClosedAction
+            ? detachedTabsControl._defaultLastTabClosedAction
+            : LastTabClosedAction;
+
+        return detachedTabsControl;
+    }
+
+
+    private void MarkDraggedItemState(object? itemModel)
+    {
+        if (itemModel is null)
+            return;
+
+        foreach (var tabItem in DragTabItems())
+        {
+            tabItem.IsDragging = false;
+            tabItem.IsSiblingDragging = true;
+        }
+
+        if (ContainerFromItem(itemModel) is DragTabItem draggedItem)
+        {
+            draggedItem.IsDragging = true;
+            draggedItem.IsSiblingDragging = false;
+            draggedItem.IsSelected = true;
+            _draggedItem = draggedItem;
+            _draggedTabModel = itemModel;
+            _dragging = true;
+        }
+
+        Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
+    }
+
+
+    private void EndExternalDragVisualState()
+    {
+        foreach (var tabItem in DragTabItems())
+        {
+            tabItem.IsDragging = false;
+            tabItem.IsSiblingDragging = false;
+        }
+
+        _dragging = false;
+        _draggedItem = null;
+        _draggedTabModel = null;
+
+        Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
+    }
+
+
+    private void HandleSourceItemsChangedAfterTransfer(IList sourceItems, int removedItemIndex, bool removedItemWasSelected)
+    {
+        if (sourceItems.Count == 0)
+        {
+            Dispatcher.UIThread.Post(
+                () => LastTabClosedAction?.Invoke(this, new CloseLastTabEventArgs(GetThisWindow())),
+                DispatcherPriority.Background);
+
+            return;
+        }
+
+        if (removedItemWasSelected)
+            SetSelectedNewTab(sourceItems, removedItemIndex);
+    }
+
+
+    private static EventHandler<CloseLastTabEventArgs> CreateDefaultLastTabClosedAction() =>
+        (_, args) => args.Window?.Close();
+
+
+    private Window CreateDefaultDetachedWindow(TabsControl detachedTabsControl)
+    {
+        Window? sourceWindow = GetThisWindow();
+
+        var detachedWindow = new Window
+        {
+            Width = sourceWindow?.Bounds.Width is > 0 ? sourceWindow.Bounds.Width : 900,
+            Height = sourceWindow?.Bounds.Height is > 0 ? sourceWindow.Bounds.Height : 600,
+            MinWidth = sourceWindow?.MinWidth ?? 320,
+            MinHeight = sourceWindow?.MinHeight ?? 240,
+            Background = sourceWindow?.Background,
+            WindowDecorations = sourceWindow?.WindowDecorations ?? WindowDecorations.Full,
+            ExtendClientAreaToDecorationsHint = sourceWindow?.ExtendClientAreaToDecorationsHint ?? false,
+            Content = detachedTabsControl,
+            DataContext = detachedTabsControl.DataContext,
+            Title = sourceWindow?.Title ?? "Detached Tab"
+        };
+
+        if (sourceWindow?.Icon is { } sourceIcon)
+            detachedWindow.Icon = sourceIcon;
+
+        return detachedWindow;
+    }
+
+
+    private bool ShouldDetachForScreenPoint(Point screenPoint)
+    {
+        if (!TryGetDropBoundsInScreen(out Rect bounds))
+            return false;
+
+        var expandedBounds = bounds.Inflate(DetachTriggerDistance);
+
+        return !expandedBounds.Contains(screenPoint);
+    }
+
+
+    private bool TryFindDropTarget(Point screenPoint, TabsControl? excludedControl, out TabsControl? target)
+    {
+        target = null;
+
+        foreach (TabsControl tabsControl in EnumerateRegisteredTabsControls())
+        {
+            if (ReferenceEquals(tabsControl, excludedControl))
+                continue;
+
+            if (!tabsControl.EnableTabAttaching)
+                continue;
+
+            if (!tabsControl.TryGetDropBoundsInScreen(out Rect bounds))
+                continue;
+
+            if (bounds.Contains(screenPoint))
+            {
+                target = tabsControl;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private bool TryGetDropBoundsInScreen(out Rect bounds)
+    {
+        bounds = default;
+
+        if (_topPanel is null)
+            return false;
+
+        TopLevel? topLevel = TopLevel.GetTopLevel(_topPanel);
+
+        if (topLevel is null)
+            return false;
+
+        Point? topLeftInTopLevel = _topPanel.TranslatePoint(new Point(0, 0), topLevel);
+
+        if (topLeftInTopLevel is null)
+            return false;
+
+        PixelPoint topLeftScreen = topLevel.PointToScreen(topLeftInTopLevel.Value);
+        PixelPoint bottomRightScreen = topLevel.PointToScreen(topLeftInTopLevel.Value + new Vector(_topPanel.Bounds.Width, _topPanel.Bounds.Height));
+
+        bounds = new Rect(
+            x: topLeftScreen.X,
+            y: topLeftScreen.Y,
+            width: Math.Max(1, bottomRightScreen.X - topLeftScreen.X),
+            height: Math.Max(1, bottomRightScreen.Y - topLeftScreen.Y));
+
+        return true;
+    }
+
+
+    private static IEnumerable<TabsControl> EnumerateRegisteredTabsControls()
+    {
+        List<TabsControl> aliveControls = new();
+
+        lock (RegistryLock)
+        {
+            for (int i = RegisteredTabsControls.Count - 1; i >= 0; i--)
+            {
+                if (RegisteredTabsControls[i].TryGetTarget(out TabsControl? tabsControl))
+                {
+                    aliveControls.Add(tabsControl);
+                }
+                else
+                {
+                    RegisteredTabsControls.RemoveAt(i);
+                }
+            }
+        }
+
+        return aliveControls;
+    }
+
+
+    private static void RegisterTabsControl(TabsControl tabsControl)
+    {
+        lock (RegistryLock)
+        {
+            bool alreadyRegistered = RegisteredTabsControls.Any(reference =>
+                reference.TryGetTarget(out TabsControl? existing) && ReferenceEquals(existing, tabsControl));
+
+            if (!alreadyRegistered)
+                RegisteredTabsControls.Add(new WeakReference<TabsControl>(tabsControl));
+        }
+    }
+
+
+    private static void UnregisterTabsControl(TabsControl tabsControl)
+    {
+        lock (RegistryLock)
+        {
+            for (int i = RegisteredTabsControls.Count - 1; i >= 0; i--)
+            {
+                if (!RegisteredTabsControls[i].TryGetTarget(out TabsControl? existing) || ReferenceEquals(existing, tabsControl))
+                    RegisteredTabsControls.RemoveAt(i);
             }
         }
     }
