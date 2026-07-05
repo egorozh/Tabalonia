@@ -146,6 +146,13 @@ public class DragTabItem : TabItem
     }
 
 
+    /// <summary>
+    /// Transfers the active drag from the internal thumb to an external controller
+    /// (see <see cref="LeftPressedThumb.HandOffDrag"/>).
+    /// </summary>
+    internal IPointer? HandOffDragToController() => _thumb?.HandOffDrag();
+
+
     private void ThumbOnDragStarted(object? sender, VectorEventArgs args)
     {
         RaiseEvent(new DragTabDragStartedEventArgs(DragStarted, this, args, _thumb.LastScreenPoint));

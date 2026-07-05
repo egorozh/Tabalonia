@@ -39,6 +39,17 @@ public class TabsControl : TabControl
     private Window? _dragSessionWindow;
     private Vector? _dragSessionWindowPointerOffset;
 
+    // Set when this control takes over pointer capture from the dragged tab's thumb, so the
+    // drag session survives the tab container being destroyed on cross-host transfers.
+    private IPointer? _dragSessionPointer;
+
+    // Floating window kept alive (hidden) while its tab is attached to another strip, so the
+    // session's pointer capture survives and the window can be reused on re-detach. Hiding does
+    // not interrupt the drag: the OS keeps delivering the drag event stream to the window that
+    // received the button press even after it is hidden.
+    private Window? _hiddenSessionWindow;
+    private TabsControl? _hiddenSessionHost;
+
     private Control? _topPanel;
     private readonly EventHandler<CloseLastTabEventArgs> _defaultLastTabClosedAction;
 
@@ -367,6 +378,53 @@ public class TabsControl : TabControl
         }
     }
 
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+
+        if (!IsDragSessionPointerEvent(e))
+            return;
+
+        if (GetScreenPointFromEvent(e) is not { } screenPoint)
+            return;
+
+        _lastKnownDragScreenPoint = screenPoint;
+
+        if (_dragSessionWindow is not null)
+        {
+            if (!TryAttachDuringDrag(screenPoint))
+                MoveDragSessionWindow(screenPoint);
+        }
+        else if (_dragSessionSourceHost is { } host)
+        {
+            ContinueExternalDrag(host, screenPoint);
+        }
+
+        e.Handled = true;
+    }
+
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        if (!IsDragSessionPointerEvent(e))
+            return;
+
+        e.Handled = true;
+        FinalizeControllerDragSession(GetScreenPointFromEvent(e) ?? _lastKnownDragScreenPoint);
+    }
+
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        if (_dragSessionPointer is not null && ReferenceEquals(e.Pointer, _dragSessionPointer))
+            FinalizeControllerDragSession(_lastKnownDragScreenPoint);
+
+        base.OnPointerCaptureLost(e);
+    }
+
     #endregion
 
 
@@ -463,32 +521,41 @@ public class TabsControl : TabControl
 
     private void ItemDragDelta(object? sender, DragTabDragDeltaEventArgs e)
     {
-        if (_draggedItem is null)
-            throw new Exception($"{nameof(TabsControl)}.{nameof(ItemDragDelta)} - _draggedItem is null");
-
-        if (e.ScreenPoint is { } screenPoint)
+        if (_dragSessionPointer is not null || _draggedItem is null)
         {
-            _lastKnownDragScreenPoint = screenPoint;
-
-            if (ReferenceEquals(_dragSessionSourceHost, this) && !IsDetachedSingleTabHost())
-                TryDetachDuringDrag(screenPoint);
-
-            MoveDragSessionWindow(screenPoint);
-        }
-
-        if (IsDetachedSingleTabHost() && _dragSessionWindow is not null)
-        {
-            e.Handled = true;
-            return;
-        }
-
-        if (!ReferenceEquals(_dragSessionSourceHost, this))
-        {
+            // The session is driven by this control's own pointer handlers (or already torn down);
+            // thumb-originated deltas are stale.
             e.Handled = true;
             return;
         }
 
         if (_draggedItem.LogicalIndex < FixedHeaderCount)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        if (e.ScreenPoint is { } screenPoint)
+        {
+            _lastKnownDragScreenPoint = screenPoint;
+
+            if (IsDetachedSingleTabHost() && _dragSessionWindow is not null)
+            {
+                if (!TryAttachDuringDrag(screenPoint))
+                    MoveDragSessionWindow(screenPoint);
+
+                e.Handled = true;
+                return;
+            }
+
+            if (ReferenceEquals(_dragSessionSourceHost, this) && TryAttachOrDetachDuringDrag(screenPoint))
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
+        if (!ReferenceEquals(_dragSessionSourceHost, this))
         {
             e.Handled = true;
             return;
@@ -511,6 +578,13 @@ public class TabsControl : TabControl
 
     private void ItemDragCompleted(object? sender, DragTabDragCompletedEventArgs e)
     {
+        if (_dragSessionPointer is not null)
+        {
+            // Session is controller-driven; completion comes from OnPointerReleased/OnPointerCaptureLost.
+            e.Handled = true;
+            return;
+        }
+
         Point? releaseScreenPoint = e.ScreenPoint ?? _lastKnownDragScreenPoint;
         TabsControl sourceHost = _dragSessionSourceHost ?? this;
         bool sourceDetachedDuringDrag = !ReferenceEquals(sourceHost, this);
@@ -557,16 +631,14 @@ public class TabsControl : TabControl
     private void TabsPanelOnDragCompleted()
     {
         if (_skipMoveTabModelsOnDragCompleted)
-        {
             _skipMoveTabModelsOnDragCompleted = false;
-            _draggedItem = null;
-            _draggedTabModel = null;
-            _lastKnownDragScreenPoint = null;
-            ResetDragSession();
-            return;
-        }
+        else
+            MoveTabModelsIfNeeded();
 
-        MoveTabModelsIfNeeded();
+        // While this control drives a cross-host drag session with its own pointer capture,
+        // the dragged model reference must survive panel drag-completion cycles.
+        if (_dragSessionPointer is not null)
+            return;
 
         _draggedItem = null;
         _draggedTabModel = null;
@@ -638,33 +710,275 @@ public class TabsControl : TabControl
     }
 
 
-    private void TryDetachDuringDrag(Point screenPoint)
+    /// <summary>
+    /// Called while the tab is still dragged inside its source strip. Once the pointer leaves the
+    /// strip area, the tab is either attached directly to another strip under the pointer or
+    /// detached into a floating window; either way the drag session continues.
+    /// </summary>
+    private bool TryAttachOrDetachDuringDrag(Point screenPoint)
     {
-        if (_draggedTabModel is null || !EnableTabDetaching)
-            return;
+        if (_draggedTabModel is null)
+            return false;
 
         if (!ShouldDetachForScreenPoint(screenPoint))
+            return false;
+
+        object model = _draggedTabModel;
+
+        if (EnableTabAttaching &&
+            TryFindDropTarget(screenPoint, this, out TabsControl? target) &&
+            target is not null)
+        {
+            TakeOverPointerCapture();
+
+            if (MoveItemToAnotherTabsControl(model, target, screenPoint))
+            {
+                EnterAttachedDragState(target, model, screenPoint);
+                return true;
+            }
+        }
+
+        if (!EnableTabDetaching)
+            return false;
+
+        TakeOverPointerCapture();
+
+        if (!DetachItemToNewWindow(model, screenPoint, fromDragSession: true, out TabsControl? detachedHost, out Window? detachedWindow))
+            return false;
+
+        if (detachedHost is null || detachedWindow is null)
+            return false;
+
+        _dragSessionSourceHost = detachedHost;
+        _dragSessionWindow = detachedWindow;
+        _dragSessionWindowPointerOffset = new Vector(120, 20);
+        _skipMoveTabModelsOnDragCompleted = true;
+
+        ClearDragVisualFlags();
+
+        detachedHost.MarkDraggedItemStateDeferred(model, screenPoint: null);
+
+        return true;
+    }
+
+
+    /// <summary>
+    /// Called while the tab floats in its own window. When the pointer moves over another strip,
+    /// the tab is attached to it immediately and the floating window is hidden (kept alive so the
+    /// pointer capture survives and the window can be reused if the tab is detached again).
+    /// </summary>
+    private bool TryAttachDuringDrag(Point screenPoint)
+    {
+        if (_draggedTabModel is null || !EnableTabAttaching)
+            return false;
+
+        TabsControl floatingHost = _dragSessionSourceHost ?? this;
+
+        if (!floatingHost.EnableTabAttaching)
+            return false;
+
+        if (!TryFindDropTarget(screenPoint, floatingHost, out TabsControl? target) || target is null)
+            return false;
+
+        TakeOverPointerCapture();
+
+        Window? floatingWindow = _dragSessionWindow;
+        object model = _draggedTabModel;
+
+        if (!floatingHost.MoveItemToAnotherTabsControl(model, target, screenPoint, suppressEmptySourceAction: true))
+            return false;
+
+        if (floatingWindow is not null)
+        {
+            _hiddenSessionWindow = floatingWindow;
+            _hiddenSessionHost = floatingHost;
+            floatingWindow.Hide();
+        }
+
+        if (!ReferenceEquals(floatingHost, this))
+            floatingHost.EndExternalDragVisualState();
+
+        EnterAttachedDragState(target, model, screenPoint);
+
+        return true;
+    }
+
+
+    private void EnterAttachedDragState(TabsControl target, object model, Point screenPoint)
+    {
+        _dragSessionSourceHost = target;
+        _dragSessionWindow = null;
+        _dragSessionWindowPointerOffset = null;
+        _skipMoveTabModelsOnDragCompleted = true;
+
+        ClearDragVisualFlags();
+
+        target.MarkDraggedItemStateDeferred(model, screenPoint);
+    }
+
+
+    /// <summary>
+    /// Drives the drag inside the host currently holding the tab: moves the tab along the strip
+    /// or detaches it again once the pointer leaves the strip area.
+    /// </summary>
+    private void ContinueExternalDrag(TabsControl host, Point screenPoint)
+    {
+        if (_draggedTabModel is null)
             return;
 
-        if (DetachItemToNewWindow(_draggedTabModel, screenPoint, fromDragSession: true, out TabsControl? detachedHost, out Window? detachedWindow))
+        if (host.EnableTabDetaching && host.ShouldDetachForScreenPoint(screenPoint))
         {
-            if (detachedHost is null || detachedWindow is null)
+            RedetachFromHost(host, screenPoint);
+            return;
+        }
+
+        host.DragExternalItemTo(screenPoint);
+    }
+
+
+    private void RedetachFromHost(TabsControl host, Point screenPoint)
+    {
+        object model = _draggedTabModel!;
+
+        if (_hiddenSessionWindow is { } hiddenWindow && _hiddenSessionHost is { } hiddenHost)
+        {
+            if (!host.MoveItemToAnotherTabsControl(model, hiddenHost, screenPoint))
                 return;
 
-            _dragSessionSourceHost = detachedHost;
-            _dragSessionWindow = detachedWindow;
+            hiddenWindow.Position = new PixelPoint(
+                x: (int)Math.Round(screenPoint.X - 120),
+                y: (int)Math.Round(screenPoint.Y - 20));
+            hiddenWindow.Show();
+
+            _dragSessionSourceHost = hiddenHost;
+            _dragSessionWindow = hiddenWindow;
             _dragSessionWindowPointerOffset = new Vector(120, 20);
-            _skipMoveTabModelsOnDragCompleted = true;
-            _dragging = false;
+            _hiddenSessionWindow = null;
+            _hiddenSessionHost = null;
 
-            foreach (var item in DragTabItems())
-            {
-                item.IsDragging = false;
-                item.IsSiblingDragging = false;
-            }
+            if (ReferenceEquals(host, this))
+                ClearDragVisualFlags();
+            else
+                host.EndExternalDragVisualState();
 
-            Dispatcher.UIThread.Post(() => detachedHost.MarkDraggedItemState(_draggedTabModel), DispatcherPriority.Loaded);
+            hiddenHost.MarkDraggedItemStateDeferred(model, screenPoint: null);
+            return;
         }
+
+        if (!host.DetachItemToNewWindow(model, screenPoint, fromDragSession: true, out TabsControl? newHost, out Window? newWindow))
+            return;
+
+        if (newHost is null || newWindow is null)
+            return;
+
+        _dragSessionSourceHost = newHost;
+        _dragSessionWindow = newWindow;
+        _dragSessionWindowPointerOffset = new Vector(120, 20);
+
+        if (ReferenceEquals(host, this))
+            ClearDragVisualFlags();
+        else
+            host.EndExternalDragVisualState();
+
+        newHost.MarkDraggedItemStateDeferred(model, screenPoint: null);
+    }
+
+
+    private void TakeOverPointerCapture()
+    {
+        if (_dragSessionPointer is not null)
+            return;
+
+        if (_draggedItem?.HandOffDragToController() is not { } pointer)
+            return;
+
+        _dragSessionPointer = pointer;
+        pointer.Capture(this);
+    }
+
+
+    private void ClearDragVisualFlags()
+    {
+        _dragging = false;
+
+        foreach (var item in DragTabItems())
+        {
+            item.IsDragging = false;
+            item.IsSiblingDragging = false;
+        }
+    }
+
+
+    private bool IsDragSessionPointerEvent(PointerEventArgs e) =>
+        _dragSessionPointer is not null && ReferenceEquals(e.Pointer, _dragSessionPointer);
+
+
+    private Point? GetScreenPointFromEvent(PointerEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is not { } topLevel)
+            return null;
+
+        PixelPoint screenPoint = topLevel.PointToScreen(e.GetPosition(topLevel));
+
+        return new Point(screenPoint.X, screenPoint.Y);
+    }
+
+
+    private void FinalizeControllerDragSession(Point? releaseScreenPoint)
+    {
+        if (_dragSessionPointer is null)
+            return;
+
+        IPointer pointer = _dragSessionPointer;
+        _dragSessionPointer = null;
+
+        if (ReferenceEquals(pointer.Captured, this))
+            pointer.Capture(null);
+
+        TabsControl host = _dragSessionSourceHost ?? this;
+        bool settlesInOwnStrip = _dragSessionWindow is null && ReferenceEquals(host, this);
+
+        if (_dragSessionWindow is not null)
+        {
+            // Released while floating: the window stays as a regular detached window.
+            if (ReferenceEquals(host, this))
+                ClearDragVisualFlags();
+            else
+                host.EndExternalDragVisualState();
+        }
+        else
+        {
+            // Released while attached to a strip: let the host settle the tab and reorder its models.
+            host.CompleteExternalDrag();
+        }
+
+        CloseHiddenSessionWindow();
+
+        _dragging = false;
+        _skipMoveTabModelsOnDragCompleted = false;
+
+        if (!settlesInOwnStrip)
+        {
+            // When the tab settles in this control's own strip, the panel's drag-completion pass
+            // still needs _draggedItem to reorder the models; TabsPanelOnDragCompleted clears it.
+            _draggedItem = null;
+            _draggedTabModel = null;
+        }
+
+        _lastKnownDragScreenPoint = null;
+        ResetDragSession();
+
+        Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
+    }
+
+
+    private void CloseHiddenSessionWindow()
+    {
+        if (_hiddenSessionWindow is { } hiddenWindow)
+            Dispatcher.UIThread.Post(hiddenWindow.Close, DispatcherPriority.Background);
+
+        _hiddenSessionWindow = null;
+        _hiddenSessionHost = null;
     }
 
 
@@ -692,7 +1006,8 @@ public class TabsControl : TabControl
         _isDetachedHost && ItemsSource is IList items && items.Count == 1;
 
 
-    private bool MoveItemToAnotherTabsControl(object item, TabsControl target, Point dropScreenPoint)
+    private bool MoveItemToAnotherTabsControl(object item, TabsControl target, Point dropScreenPoint,
+        bool suppressEmptySourceAction = false)
     {
         if (ReferenceEquals(target, this))
             return false;
@@ -713,7 +1028,15 @@ public class TabsControl : TabControl
         targetItems.Insert(targetInsertIndex, item);
         target.SelectedItem = item;
 
-        HandleSourceItemsChangedAfterTransfer(sourceItems, sourceIndex, removedItemWasSelected);
+        if (suppressEmptySourceAction)
+        {
+            if (sourceItems.Count > 0 && removedItemWasSelected)
+                SetSelectedNewTab(sourceItems, sourceIndex);
+        }
+        else
+        {
+            HandleSourceItemsChangedAfterTransfer(sourceItems, sourceIndex, removedItemWasSelected);
+        }
 
         return true;
     }
@@ -845,6 +1168,7 @@ public class TabsControl : TabControl
     {
         var detachedTabsControl = new TabsControl
         {
+            Margin = Margin,
             AdjacentHeaderItemOffset = AdjacentHeaderItemOffset,
             TabItemWidth = TabItemWidth,
             ShowDefaultCloseButton = ShowDefaultCloseButton,
@@ -874,6 +1198,62 @@ public class TabsControl : TabControl
             : LastTabClosedAction;
 
         return detachedTabsControl;
+    }
+
+
+    private void MarkDraggedItemStateDeferred(object? itemModel, Point? screenPoint) =>
+        Dispatcher.UIThread.Post(() =>
+        {
+            MarkDraggedItemState(itemModel);
+
+            if (screenPoint is { } point)
+                DragExternalItemTo(point);
+        }, DispatcherPriority.Loaded);
+
+
+    /// <summary>
+    /// Positions the dragged tab in this control's strip from a screen-space pointer location.
+    /// Used when the drag session is driven by another <see cref="TabsControl"/>.
+    /// </summary>
+    private void DragExternalItemTo(Point screenPoint)
+    {
+        if (_draggedItem is null)
+            return;
+
+        if (TopLevel.GetTopLevel(_tabsPanel) is not { } topLevel)
+            return;
+
+        Point pointInTopLevel = topLevel.PointToClient(new PixelPoint(
+            (int)Math.Round(screenPoint.X),
+            (int)Math.Round(screenPoint.Y)));
+
+        if (topLevel.TranslatePoint(pointInTopLevel, _tabsPanel) is not { } pointInPanel)
+            return;
+
+        double tabWidth = _draggedItem.Bounds.Width > 0 ? _draggedItem.Bounds.Width : TabItemWidth;
+
+        _draggedItem.X = pointInPanel.X - tabWidth / 2;
+        _draggedItem.Y = 0;
+
+        _tabsPanel.InvalidateMeasure();
+    }
+
+
+    /// <summary>
+    /// Finishes an externally driven drag: clears the drag visual state but keeps the dragged item
+    /// reference so the panel's drag-completion pass reorders the models.
+    /// </summary>
+    private void CompleteExternalDrag()
+    {
+        foreach (var tabItem in DragTabItems())
+        {
+            tabItem.IsDragging = false;
+            tabItem.IsSiblingDragging = false;
+        }
+
+        _dragging = false;
+
+        Dispatcher.UIThread.Post(() => _tabsPanel.InvalidateMeasure(), DispatcherPriority.Loaded);
     }
 
 
@@ -981,6 +1361,10 @@ public class TabsControl : TabControl
         foreach (TabsControl tabsControl in EnumerateRegisteredTabsControls())
         {
             if (ReferenceEquals(tabsControl, excludedControl))
+                continue;
+
+            // The invisible floating window kept alive during an attached drag must not accept drops.
+            if (ReferenceEquals(tabsControl, _hiddenSessionHost))
                 continue;
 
             if (!tabsControl.EnableTabAttaching)

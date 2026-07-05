@@ -17,6 +17,7 @@ public class LeftPressedThumb : TemplatedControl
 
     
     private Point? _lastPoint;
+    private IPointer? _pointer;
 
     public Point? LastScreenPoint { get; private set; }
     
@@ -42,6 +43,23 @@ public class LeftPressedThumb : TemplatedControl
 
     protected override AutomationPeer OnCreateAutomationPeer() => new LeftPressedThumbPeer(this);
 
+
+    /// <summary>
+    /// Hands the active drag off to an external controller: clears internal drag state so that
+    /// losing pointer capture does not raise <see cref="DragCompletedEvent"/>, and returns the
+    /// pointer so the caller can re-capture it.
+    /// </summary>
+    internal IPointer? HandOffDrag()
+    {
+        var pointer = _pointer;
+
+        _pointer = null;
+        _lastPoint = null;
+        LastScreenPoint = null;
+
+        return pointer;
+    }
+
     
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
@@ -54,11 +72,12 @@ public class LeftPressedThumb : TemplatedControl
             };
 
             _lastPoint = null;
+            _pointer = null;
             LastScreenPoint = null;
 
             RaiseEvent(ev);
         }
-        
+
         base.OnPointerCaptureLost(e);
     }
 
@@ -88,6 +107,7 @@ public class LeftPressedThumb : TemplatedControl
         
         e.Handled = true;
         e.Pointer.Capture(this);
+        _pointer = e.Pointer;
         _lastPoint = e.GetPosition(this);
         LastScreenPoint = GetScreenPoint(e);
 
@@ -109,6 +129,7 @@ public class LeftPressedThumb : TemplatedControl
         {
             e.Handled = true;
             _lastPoint = null;
+            _pointer = null;
             LastScreenPoint = GetScreenPoint(e);
             e.Pointer.Capture(null);
 
