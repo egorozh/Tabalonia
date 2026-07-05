@@ -9,8 +9,9 @@
         Title="Tabalonia Demo"
         
         Background="{DynamicResource TabControlWindowActiveBackgroundBrush}"
-        ExtendClientAreaChromeHints="PreferSystemChrome"
-        ExtendClientAreaToDecorationsHint="True">
+        
+        ExtendClientAreaToDecorationsHint="True"
+        x:DataType="dragablzDemo:MainViewModel">
    
     <controls:TabsControl ItemsSource="{Binding TabItems}"
                           NewItemFactory="{Binding NewItemFactory}"
